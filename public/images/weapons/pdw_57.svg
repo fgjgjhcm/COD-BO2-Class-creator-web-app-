@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 160" width="320" height="160" role="img">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1c1e24"/>
+      <stop offset="100%" stop-color="#14161a"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d4d4d8"/>
+      <stop offset="45%" stop-color="#9ca3af"/>
+      <stop offset="100%" stop-color="#52525b"/>
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#g)"/>
+  <rect x="8" y="8" width="304" height="144" fill="none" stroke="rgba(255,106,0,0.18)" stroke-width="2"/>
+  
+    <g transform="translate(24,18)">
+      <path d="M22 64 h120 v16 H34 v8 H22 z" fill="url(#metal)"/>
+      <rect x="142" y="68" width="84" height="7" fill="#a1a1aa"/>
+      <rect x="220" y="66" width="10" height="11" fill="#71717a"/>
+      <path d="M4 66 h20 v20 h-8 l-12 -8 z" fill="#52525b"/>
+      <path d="M70 80 l8 34 h14 l-4 -34 z" fill="#3f3f46"/>
+      <rect x="70" y="80" width="14" height="28" fill="#3f3f46"/>
+      <rect x="70" y="50" width="22" height="10" fill="#71717a"/>
+      <rect x="42" y="62" width="36" height="4" fill="hsl(40 100% 55%)" opacity="0.85"/>
+      <text x="22" y="30" fill="hsl(40 100% 55%)" font-family="Arial Black, sans-serif" font-size="13" letter-spacing="1.5">PDW 57</text>
+    </g>
+</svg>
