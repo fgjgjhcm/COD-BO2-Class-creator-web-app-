@@ -18,9 +18,27 @@ const body = Saira_Condensed({
 });
 
 export const metadata: Metadata = {
-  title: "BO2 Create-a-Class | Pick 10 Builder",
+  metadataBase: new URL("https://bo2loadouts.com"),
+  title: {
+    default: "BO2 Create-a-Class | Pick 10 Builder",
+    template: "%s | BO2 Loadouts",
+  },
   description:
     "Fan-made Black Ops II Create-a-Class builder with live Pick 10 allocation, wildcards, and shareable loadouts.",
+  openGraph: {
+    type: "website",
+    siteName: "BO2 Loadouts",
+    title: "BO2 Create-a-Class | Pick 10 Builder",
+    description:
+      "Fan-made Black Ops II Create-a-Class builder with live Pick 10 allocation, wildcards, and shareable loadouts.",
+    url: "https://bo2loadouts.com",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BO2 Create-a-Class | Pick 10 Builder",
+    description:
+      "Fan-made Black Ops II Create-a-Class builder with live Pick 10 allocation, wildcards, and shareable loadouts.",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -106,7 +106,14 @@ export function ClassBuilder() {
         {shareMessage ? (
           <span className="text-[var(--accent)]">{shareMessage}</span>
         ) : null}
-        <span className="ml-auto hidden text-[10px] tracking-[0.14em] text-zinc-600 sm:inline">
+        <nav className="cac-seo-links" aria-label="Reference">
+          <a href="/weapons">Weapons</a>
+          <a href="/perks">Perks</a>
+          <a href="/attachments">Attachments</a>
+          <a href="/guide/pick-10">Guide</a>
+          <a href="/about">About</a>
+        </nav>
+        <span className="hidden w-full text-[10px] tracking-[0.14em] text-zinc-600 sm:inline sm:w-auto">
           Fan project · Not affiliated with Activision / Treyarch
         </span>
       </footer>
