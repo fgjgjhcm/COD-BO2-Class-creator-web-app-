@@ -2,7 +2,8 @@ export type EasterEggId =
   | "dsr_fire"
   | "share_class"
   | "nuke_points"
-  | "afterlife";
+  | "afterlife"
+  | "ice_staff";
 
 export interface EasterEggDef {
   id: EasterEggId;
@@ -45,6 +46,15 @@ export const EASTER_EGGS: EasterEggDef[] = [
     lockedIcon: "/images/easter-eggs/nuke-silhouette.png",
   },
   {
+    id: "ice_staff",
+    name: "Ice Staff",
+    category: "Origins",
+    hint: "The dig site waits for a colder class name…",
+    description: "Ice Staff. Ull’s Arrow waits in the fog.",
+    unlockedIcon: "/images/easter-eggs/icestaff.webp",
+    lockedIcon: "/images/easter-eggs/icestaff-silhouette.png",
+  },
+  {
     id: "afterlife",
     name: "Afterlife",
     category: "Mob of the Dead",
@@ -55,6 +65,27 @@ export const EASTER_EGGS: EasterEggDef[] = [
   },
 ];
 
+/** Normalize a class name for easter-egg matching. */
+export function normalizeClassNameForEgg(name: string): string {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[“”"']/g, "")
+    .replace(/[-–—_/]+/g, " ")
+    .replace(/\s+/g, " ");
+}
+
+const ICE_STAFF_CLASS_NAMES = new Set([
+  "ice staff",
+  "staff of ice",
+  "ulls arrow",
+]);
+
+export function isIceStaffClassName(name: string): boolean {
+  const normalized = normalizeClassNameForEgg(name);
+  // ull's arrow normalizes apostrophe away → "ulls arrow"
+  return ICE_STAFF_CLASS_NAMES.has(normalized);
+}
 export const EASTER_EGGS_BY_ID = Object.fromEntries(
   EASTER_EGGS.map((egg) => [egg.id, egg]),
 ) as Record<EasterEggId, EasterEggDef>;

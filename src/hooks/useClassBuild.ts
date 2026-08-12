@@ -24,6 +24,7 @@ import {
 } from "@/lib/storage";
 import { buildShareUrl, readBuildFromSearchParams } from "@/lib/share";
 import { celebrateEasterEggUnlock } from "@/lib/uiSound";
+import { isIceStaffClassName } from "@/lib/easterEggs";
 
 function replaceAt(
   list: (string | null)[],
@@ -91,6 +92,14 @@ export function useClassBuild() {
     const total = slots.reduce((sum, slot) => sum + countUsedPoints(slot), 0);
     if (total >= 30) {
       celebrateEasterEggUnlock("nuke_points");
+    }
+  }, [slots, hydrated]);
+
+  // Ice Staff EE: unlock when any saved class is named after the Origins staff.
+  useEffect(() => {
+    if (!hydrated) return;
+    if (slots.some((slot) => isIceStaffClassName(slot.name))) {
+      celebrateEasterEggUnlock("ice_staff");
     }
   }, [slots, hydrated]);
 
