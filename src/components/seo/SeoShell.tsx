@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { AuthButton } from "@/components/community/AuthButton";
 import { SeoTabs } from "@/components/seo/SeoTabs";
-import { SITE_DOMAIN, SITE_ICON } from "@/lib/site";
+import { SEO_HUB_NAV, SITE_DOMAIN, SITE_ICON } from "@/lib/site";
 
 export function SeoShell({
   children,
@@ -32,6 +32,13 @@ export function SeoShell({
             />
             <span>{SITE_DOMAIN}</span>
           </Link>
+          <nav className="seo-header-hub" aria-label="Hub">
+            {SEO_HUB_NAV.map((item) => (
+              <Link key={item.href} href={item.href} className="seo-header-hub-link">
+                {item.label}
+              </Link>
+            ))}
+          </nav>
           <div className="seo-header-actions">
             <AuthButton />
             <Link href="/builder" className="seo-cta">
@@ -72,6 +79,8 @@ export function SeoShell({
           <Link href="/builder">Class builder</Link>
           {" · "}
           <Link href="/community">Community</Link>
+          {" · "}
+          <Link href="/zombies">Zombies</Link>
         </p>
       </footer>
     </div>

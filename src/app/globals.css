@@ -714,8 +714,7 @@ body::before {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem 1.25rem;
+  gap: 0.75rem 1rem;
 }
 
 .seo-brand {
@@ -729,6 +728,28 @@ body::before {
   text-transform: lowercase;
   color: var(--text);
   text-decoration: none;
+  flex-shrink: 0;
+}
+
+.seo-header-hub {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem 0.85rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.seo-header-hub-link {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9a9a9a;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.seo-header-hub-link:hover {
+  color: var(--accent);
 }
 
 .seo-brand-icon {
@@ -1219,6 +1240,16 @@ body::before {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .seo-header-hub {
+    order: 3;
+    flex: 1 1 100%;
+    gap: 0.75rem;
+  }
+
+  .seo-header-actions {
+    margin-left: 0;
   }
 
   .seo-cta {
@@ -2568,6 +2599,8 @@ html.afterlife-active .teddy-float {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .cac-header-aside {
