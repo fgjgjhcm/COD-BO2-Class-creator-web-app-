@@ -105,7 +105,11 @@ export default async function CommunityUserPage({ params }: Props) {
       ) : (
         <div className="community-grid">
           {loadouts.map((loadout) => (
-            <CommunityLoadoutCard key={loadout.id} loadout={loadout} />
+            <CommunityLoadoutCard
+              key={loadout.id}
+              loadout={loadout}
+              canDelete={isSelf}
+            />
           ))}
         </div>
       )}

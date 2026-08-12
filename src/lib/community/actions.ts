@@ -248,6 +248,17 @@ export async function deleteLoadoutAction(
     return { ok: false, error: auth.error ?? "Sign in required." };
   }
 
+  const { data: existing } = await auth.supabase
+    .from("loadouts")
+    .select("id, slug, user_id")
+    .eq("id", loadoutId)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (!existing) {
+    return { ok: false, error: "Loadout not found." };
+  }
+
   const { error } = await auth.supabase
     .from("loadouts")
     .delete()
@@ -256,6 +267,7 @@ export async function deleteLoadoutAction(
 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/community");
+  revalidatePath(`/community/loadout/${existing.slug}`);
   return { ok: true, data: undefined };
 }
 

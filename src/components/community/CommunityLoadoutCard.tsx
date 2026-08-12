@@ -6,6 +6,7 @@ import type { CommunityLoadout } from "@/types/community";
 import { LoadoutPreview } from "@/components/community/LoadoutPreview";
 import { LikeButton } from "@/components/community/LikeButton";
 import { SaveButton } from "@/components/community/SaveButton";
+import { DeleteLoadoutButton } from "@/components/community/DeleteLoadoutButton";
 import { UserBadge } from "@/components/community/UserBadge";
 import { weaponsById } from "@/data/weapons";
 import { getItemImageSrc } from "@/lib/icons";
@@ -24,8 +25,10 @@ function relativeTime(iso: string): string {
 
 export function CommunityLoadoutCard({
   loadout,
+  canDelete = false,
 }: {
   loadout: CommunityLoadout;
+  canDelete?: boolean;
 }) {
   const [shareMsg, setShareMsg] = useState<string | null>(null);
   const primary = loadout.loadout_data.primaryWeaponId
@@ -89,7 +92,10 @@ export function CommunityLoadoutCard({
           initialSaved={loadout.saved_by_me}
           initialCount={loadout.save_count}
         />
-        <Link href={openHref} className="community-action-btn community-action-primary">
+        <Link
+          href={openHref}
+          className="community-action-btn community-action-primary"
+        >
           Open Class
         </Link>
         <Link href={remixHref} className="community-action-btn">
@@ -111,6 +117,16 @@ export function CommunityLoadoutCard({
         >
           {shareMsg ?? "Share"}
         </button>
+        {canDelete ? (
+          <DeleteLoadoutButton
+            loadoutId={loadout.id}
+            redirectTo={
+              loadout.profile?.username
+                ? `/community/user/${loadout.profile.username}`
+                : "/community"
+            }
+          />
+        ) : null}
       </footer>
     </article>
   );

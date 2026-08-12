@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { CommunityFilters } from "@/components/community/CommunityFilters";
 import { CommunityLoadoutCard } from "@/components/community/CommunityLoadoutCard";
-import { listCommunityLoadouts } from "@/lib/community/queries";
+import { getMyProfile, listCommunityLoadouts } from "@/lib/community/queries";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import {
   COMMUNITY_PAGE_SIZE,
@@ -32,6 +32,7 @@ export default async function CommunityPage({
   const q = params.q?.trim() ?? "";
   const page = Math.max(1, Number(params.page) || 1);
   const configured = isSupabaseConfigured();
+  const me = configured ? await getMyProfile() : null;
 
   const { items, total } = configured
     ? await listCommunityLoadouts({ sort, q, page })
@@ -83,7 +84,11 @@ export default async function CommunityPage({
           ) : (
             <div className="community-grid">
               {items.map((loadout) => (
-                <CommunityLoadoutCard key={loadout.id} loadout={loadout} />
+                <CommunityLoadoutCard
+                  key={loadout.id}
+                  loadout={loadout}
+                  canDelete={me?.id === loadout.user_id}
+                />
               ))}
             </div>
           )}

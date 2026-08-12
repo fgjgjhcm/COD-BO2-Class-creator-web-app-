@@ -5,9 +5,10 @@ import { SeoSection } from "@/components/seo/ItemGrid";
 import { LoadoutPreview } from "@/components/community/LoadoutPreview";
 import { LikeButton } from "@/components/community/LikeButton";
 import { SaveButton } from "@/components/community/SaveButton";
+import { DeleteLoadoutButton } from "@/components/community/DeleteLoadoutButton";
 import { UserBadge } from "@/components/community/UserBadge";
 import { ReportButton } from "@/components/community/ReportButton";
-import { getLoadoutBySlug } from "@/lib/community/queries";
+import { getLoadoutBySlug, getMyProfile } from "@/lib/community/queries";
 import { countUsedPoints } from "@/lib/pick10";
 import { SITE_URL } from "@/lib/site";
 
@@ -35,12 +36,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CommunityLoadoutPage({ params }: Props) {
   const { slug } = await params;
-  const loadout = await getLoadoutBySlug(slug);
+  const [loadout, me] = await Promise.all([
+    getLoadoutBySlug(slug),
+    getMyProfile(),
+  ]);
   if (!loadout) notFound();
 
   const points = countUsedPoints(loadout.loadout_data);
   const openHref = `/builder?community=${loadout.id}`;
   const remixHref = `/builder?community=${loadout.id}&remix=1`;
+  const isOwner = me?.id === loadout.user_id;
+  const ownerProfileHref = loadout.profile?.username
+    ? `/community/user/${loadout.profile.username}`
+    : "/community";
 
   return (
     <>
@@ -82,13 +90,19 @@ export default async function CommunityLoadoutPage({ params }: Props) {
           initialSaved={loadout.saved_by_me}
           initialCount={loadout.save_count}
         />
+        {isOwner ? (
+          <DeleteLoadoutButton
+            loadoutId={loadout.id}
+            redirectTo={ownerProfileHref}
+          />
+        ) : null}
       </div>
 
       <SeoSection title="Class">
         <LoadoutPreview build={loadout.loadout_data} />
       </SeoSection>
 
-      <ReportButton loadoutId={loadout.id} />
+      {!isOwner ? <ReportButton loadoutId={loadout.id} /> : null}
 
       <p className="seo-lead">
         <Link href="/community" style={{ color: "var(--accent)" }}>
