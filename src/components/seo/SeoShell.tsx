@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { AuthButton } from "@/components/community/AuthButton";
 import { SeoTabs } from "@/components/seo/SeoTabs";
 import { SITE_DOMAIN, SITE_ICON } from "@/lib/site";
 
@@ -31,9 +32,12 @@ export function SeoShell({
             />
             <span>{SITE_DOMAIN}</span>
           </Link>
-          <Link href="/builder" className="seo-cta">
-            Open Class Builder
-          </Link>
+          <div className="seo-header-actions">
+            <AuthButton />
+            <Link href="/builder" className="seo-cta">
+              Open Class Builder
+            </Link>
+          </div>
         </div>
         {!hideTabs ? <SeoTabs /> : null}
       </header>
@@ -66,6 +70,8 @@ export function SeoShell({
           <Link href="/">{SITE_DOMAIN}</Link>
           {" · "}
           <Link href="/builder">Class builder</Link>
+          {" · "}
+          <Link href="/community">Community</Link>
         </p>
       </footer>
     </div>

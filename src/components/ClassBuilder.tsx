@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useClassBuild } from "@/hooks/useClassBuild";
 import { Pick10Counter } from "@/components/Pick10Counter";
 import { ItemSelector } from "@/components/ItemSelector";
 import { ClassBuilderBoard } from "@/components/ClassBuilderBoard";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { PublishLoadoutModal } from "@/components/community/PublishLoadoutModal";
+import { AuthButton } from "@/components/community/AuthButton";
 
 export function ClassBuilder() {
   const controller = useClassBuild();
@@ -16,6 +19,9 @@ export function ClassBuilder() {
     usedPoints,
     maxPoints,
     loadoutSlots,
+    remixOfId,
+    wantPublish,
+    clearWantPublish,
     setName,
     resetClass,
     selectLoadoutSlot,
@@ -28,6 +34,15 @@ export function ClassBuilder() {
     primaryWeapon,
     secondaryWeapon,
   } = controller;
+
+  const [publishOpen, setPublishOpen] = useState(false);
+
+  useEffect(() => {
+    if (hydrated && wantPublish) {
+      setPublishOpen(true);
+      clearWantPublish();
+    }
+  }, [hydrated, wantPublish, clearWantPublish]);
 
   if (!hydrated) {
     return <LoadingScreen label="Loading loadout" />;
@@ -76,7 +91,10 @@ export function ClassBuilder() {
             ))}
           </div>
         </div>
-        <Pick10Counter used={usedPoints} max={maxPoints} />
+        <div className="cac-header-aside">
+          <AuthButton />
+          <Pick10Counter used={usedPoints} max={maxPoints} />
+        </div>
       </header>
 
       <ClassBuilderBoard controller={controller} />
@@ -87,6 +105,13 @@ export function ClassBuilder() {
         </button>
         <button type="button" className="cac-prompt" onClick={shareClass}>
           <span className="cac-prompt-key">Share</span> Class
+        </button>
+        <button
+          type="button"
+          className="cac-prompt"
+          onClick={() => setPublishOpen(true)}
+        >
+          <span className="cac-prompt-key">Post</span> To Community
         </button>
         <button
           type="button"
@@ -108,6 +133,7 @@ export function ClassBuilder() {
         ) : null}
         <nav className="cac-seo-links" aria-label="Reference">
           <a href="/">Home</a>
+          <a href="/community">Community</a>
           <a href="/loadouts">Loadouts</a>
           <a href="/weapons">Weapons</a>
           <a href="/perks">Perks</a>
@@ -134,6 +160,13 @@ export function ClassBuilder() {
           clearSelection(selector);
           closeSelector();
         }}
+      />
+
+      <PublishLoadoutModal
+        open={publishOpen}
+        onClose={() => setPublishOpen(false)}
+        build={build}
+        remixOf={remixOfId}
       />
     </div>
   );

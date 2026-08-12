@@ -26,6 +26,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.95,
     },
     {
+      url: `${SITE_URL}/community`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.95,
+    },
+    {
+      url: `${SITE_URL}/community/emblems`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
       url: `${SITE_URL}/weapons`,
       lastModified: now,
       changeFrequency: "weekly",

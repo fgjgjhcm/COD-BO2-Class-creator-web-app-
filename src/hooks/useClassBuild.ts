@@ -25,6 +25,33 @@ import {
 import { buildShareUrl, readBuildFromSearchParams } from "@/lib/share";
 import { celebrateEasterEggUnlock } from "@/lib/uiSound";
 import { isIceStaffClassName } from "@/lib/easterEggs";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { parseClassBuild } from "@/lib/community/validate";
+import type { ClassBuild as ClassBuildType } from "@/types/class";
+
+async function fetchCommunityBuild(
+  id: string,
+): Promise<ClassBuildType | null> {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("loadouts")
+      .select("loadout_data, title")
+      .eq("id", id)
+      .maybeSingle();
+    if (error || !data) return null;
+    const parsed = parseClassBuild(data.loadout_data);
+    if (!parsed) return null;
+    return {
+      ...parsed,
+      name: data.title?.slice(0, 32) || parsed.name,
+    };
+  } catch {
+    return null;
+  }
+}
 
 function replaceAt(
   list: (string | null)[],
@@ -46,38 +73,63 @@ export function useClassBuild() {
   const [hydrated, setHydrated] = useState(false);
   const [selector, setSelector] = useState<SelectorTarget | null>(null);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const [remixOfId, setRemixOfId] = useState<string | null>(null);
+  const [wantPublish, setWantPublish] = useState(false);
 
   const build = slots[activeIndex] ?? createEmptyBuild(defaultLoadoutName(0));
 
   useEffect(() => {
+    let cancelled = false;
     const params = new URLSearchParams(window.location.search);
     const fromUrl = readBuildFromSearchParams(params);
+    const communityId = params.get("community");
+    const remix = params.get("remix") === "1";
+    const publish = params.get("publish") === "1";
     const stored = loadLoadoutsState();
     const nextSlots = [...stored.slots];
     let nextActive = stored.activeIndex;
 
-    // Shared URL wins for the active edit session.
-    if (fromUrl) {
-      nextSlots[nextActive] = sanitizeBuild({
-        ...createEmptyBuild(defaultLoadoutName(nextActive)),
-        ...fromUrl,
-      });
-    }
-
     const startedAt = performance.now();
     const minSplashMs = 700;
-    let timeoutId = 0;
 
-    const frame = window.requestAnimationFrame(() => {
-      setSlots(nextSlots);
-      setActiveIndex(nextActive);
+    void (async () => {
+      let communityBuild: ClassBuildType | null = null;
+      if (communityId) {
+        communityBuild = await fetchCommunityBuild(communityId);
+      }
+
+      // Priority: community id > ?c= share payload > local storage
+      if (communityBuild) {
+        nextSlots[nextActive] = sanitizeBuild({
+          ...createEmptyBuild(defaultLoadoutName(nextActive)),
+          ...communityBuild,
+        });
+        if (remix) {
+          setRemixOfId(communityId);
+        }
+      } else if (fromUrl) {
+        nextSlots[nextActive] = sanitizeBuild({
+          ...createEmptyBuild(defaultLoadoutName(nextActive)),
+          ...fromUrl,
+        });
+      }
+
+      if (publish) setWantPublish(true);
+
+      if (cancelled) return;
+
       const elapsed = performance.now() - startedAt;
       const remaining = Math.max(0, minSplashMs - elapsed);
-      timeoutId = window.setTimeout(() => setHydrated(true), remaining);
-    });
+      window.setTimeout(() => {
+        if (cancelled) return;
+        setSlots(nextSlots);
+        setActiveIndex(nextActive);
+        setHydrated(true);
+      }, remaining);
+    })();
+
     return () => {
-      window.cancelAnimationFrame(frame);
-      window.clearTimeout(timeoutId);
+      cancelled = true;
     };
   }, []);
 
@@ -569,6 +621,10 @@ export function useClassBuild() {
     secondaryWeapon,
     activeIndex,
     loadoutSlots,
+    remixOfId,
+    wantPublish,
+    clearWantPublish: () => setWantPublish(false),
+    clearRemixOfId: () => setRemixOfId(null),
     setName,
     resetClass,
     selectLoadoutSlot,
