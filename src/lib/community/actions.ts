@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseEnv, isSupabaseConfigured } from "@/lib/supabase/env";
 import { uniqueSlug, isValidUsername, normalizeUsername } from "@/lib/community/slug";
-import { parseEmblemCode } from "@/lib/community/emblemCode";
+import { parseEmblemCodeResult } from "@/lib/community/emblemCode";
 import {
   parseClassBuild,
   validateClassBuild,
@@ -385,13 +385,11 @@ export async function publishEmblemAction(input: {
   if (!title) return { ok: false, error: "Title is required." };
 
   const emblemCode = input.emblemCode.trim();
-  const parsed = parseEmblemCode(emblemCode);
-  if (!parsed) {
-    return {
-      ok: false,
-      error: "Invalid emblem code. Paste a SAVE code from the BO2 emblem editor.",
-    };
+  const parsedResult = parseEmblemCodeResult(emblemCode);
+  if (!parsedResult.ok) {
+    return { ok: false, error: parsedResult.error };
   }
+  const parsed = parsedResult.data;
   if (parsed.layerCount < 1) {
     return { ok: false, error: "Emblem code has no layers." };
   }
