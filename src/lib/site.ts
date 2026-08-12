@@ -10,7 +10,7 @@ export const SEO_HUB_NAV = [
   {
     href: "/zombies",
     label: "Zombies",
-    icon: "/images/weapons/packapunch.webp",
+    icon: "/images/weapons/pack-a-punch.webp",
     glow: "pap" as const,
   },
 ] as const;
