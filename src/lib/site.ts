@@ -7,7 +7,12 @@ export const SITE_ICON = "/icon.png";
 /** Top-bar destinations (not arsenal reference) */
 export const SEO_HUB_NAV = [
   { href: "/community", label: "Community" },
-  { href: "/zombies", label: "Zombies" },
+  {
+    href: "/zombies",
+    label: "Zombies",
+    icon: "/images/weapons/packapunch.webp",
+    glow: "pap" as const,
+  },
 ] as const;
 
 export const SEO_NAV = [
