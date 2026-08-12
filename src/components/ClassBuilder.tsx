@@ -108,6 +108,7 @@ export function ClassBuilder() {
         ) : null}
         <nav className="cac-seo-links" aria-label="Reference">
           <a href="/">Home</a>
+          <a href="/loadouts">Loadouts</a>
           <a href="/weapons">Weapons</a>
           <a href="/perks">Perks</a>
           <a href="/attachments">Attachments</a>

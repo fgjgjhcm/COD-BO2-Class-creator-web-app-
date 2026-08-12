@@ -9,14 +9,21 @@ function toBase64Url(value: string): string {
   bytes.forEach((byte) => {
     binary += String.fromCharCode(byte);
   });
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  const base64 =
+    typeof btoa === "function"
+      ? btoa(binary)
+      : Buffer.from(bytes).toString("base64");
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
 function fromBase64Url(value: string): string {
   const padded = value.replace(/-/g, "+").replace(/_/g, "/");
   const padLength = (4 - (padded.length % 4)) % 4;
   const base64 = padded + "=".repeat(padLength);
-  const binary = atob(base64);
+  const binary =
+    typeof atob === "function"
+      ? atob(base64)
+      : Buffer.from(base64, "base64").toString("binary");
   const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
   return new TextDecoder().decode(bytes);
 }

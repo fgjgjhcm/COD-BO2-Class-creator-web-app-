@@ -5,6 +5,7 @@ export const SITE_DOMAIN = "bo2loadouts.com";
 export const SITE_ICON = "/icon.png";
 
 export const SEO_NAV = [
+  { href: "/loadouts", label: "Loadouts", blurb: "Mode and playstyle class setups" },
   { href: "/weapons", label: "Weapons", blurb: "ARs, SMGs, LMGs, snipers, and more" },
   { href: "/attachments", label: "Attachments", blurb: "Optics, barrels, mags, and stocks" },
   { href: "/perks", label: "Perks", blurb: "Perk 1, 2, and 3 for Pick 10" },

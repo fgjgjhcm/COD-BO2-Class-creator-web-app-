@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { attachments } from "@/data/attachments";
 import { equipment } from "@/data/equipment";
+import { FEATURED_LOADOUTS } from "@/data/featuredLoadouts";
 import { perks } from "@/data/perks";
 import { weapons } from "@/data/weapons";
 import { wildcards } from "@/data/wildcards";
@@ -17,6 +18,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.9,
+    },
+    {
+      url: `${SITE_URL}/loadouts`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.95,
     },
     {
       url: `${SITE_URL}/weapons`,
@@ -68,6 +75,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
+  const loadoutRoutes = FEATURED_LOADOUTS.map((loadout) => ({
+    url: `${SITE_URL}/loadouts/${loadout.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.85,
+  }));
+
   const weaponRoutes = weapons.map((weapon) => ({
     url: `${SITE_URL}/weapons/${weapon.id}`,
     lastModified: now,
@@ -112,6 +126,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     ...staticRoutes,
+    ...loadoutRoutes,
     ...weaponRoutes,
     ...attachmentRoutes,
     ...perkRoutes,
