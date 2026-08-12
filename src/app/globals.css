@@ -3045,19 +3045,96 @@ html.afterlife-active .teddy-float {
   margin-top: 1.25rem;
 }
 
-.community-auth-secondary {
-  border: 1px solid rgba(255, 255, 255, 0.18);
+.community-auth-provider {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(255, 122, 0, 0.55);
   background: transparent;
-  color: #ddd;
-  padding: 0.75rem 1rem;
+  color: var(--accent);
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  font-size: 0.78rem;
   cursor: pointer;
 }
 
-.community-auth-secondary:hover {
-  border-color: var(--accent);
+.community-auth-provider img {
+  width: 1.35rem;
+  height: 1.35rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.community-auth-provider:hover:not(:disabled) {
+  background: rgba(255, 122, 0, 0.12);
+  border-color: var(--accent-hot);
+  color: #fff;
+}
+
+.community-auth-provider:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.community-auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 1rem;
+  color: #777;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.community-auth-divider::before,
+.community-auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.community-auth-email {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.community-auth-email-submit {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.community-auth-message {
+  color: #9dffa0;
+  font-size: 0.85rem;
+  margin: 0.5rem 0;
+}
+
+.community-auth-switch {
+  margin: 1rem 0 0;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.community-auth-switch-btn {
+  background: none;
+  border: 0;
+  padding: 0;
   color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.community-auth-switch-btn:hover {
+  color: var(--accent-hot);
 }
 
 .community-error,
