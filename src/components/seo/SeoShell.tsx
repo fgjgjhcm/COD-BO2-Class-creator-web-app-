@@ -45,8 +45,8 @@ export function SeoShell({
                     src={item.icon}
                     alt=""
                     className="seo-header-hub-icon"
-                    width={36}
-                    height={36}
+                    width={40}
+                    height={40}
                   />
                 </span>
                 <span>{item.label}</span>

@@ -9,13 +9,13 @@ export const SEO_HUB_NAV = [
   {
     href: "/community",
     label: "Community",
-    icon: "/images/prestige2.png",
+    icon: "/images/hub/community-prestige.png",
     glow: "prestige" as const,
   },
   {
     href: "/zombies",
     label: "Zombies",
-    icon: "/images/weapons/pack-a-punch.webp",
+    icon: "/images/hub/zombies-pack-a-punch.png",
     glow: "pap" as const,
   },
 ] as const;
