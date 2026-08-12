@@ -7,19 +7,28 @@ export function SeoShell({
   children,
   breadcrumb,
   hideTabs = false,
+  bleed = false,
 }: {
   children: ReactNode;
   breadcrumb?: { label: string; href?: string }[];
   /** Home page uses its own large section tabs */
   hideTabs?: boolean;
+  /** Full-bleed landing (no main max-width padding) */
+  bleed?: boolean;
 }) {
   return (
-    <div className="seo-shell">
+    <div className={`seo-shell${bleed ? " seo-shell--bleed" : ""}`}>
       <header className="seo-header">
         <div className="seo-header-inner">
           <Link href="/home" className="seo-brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={SITE_ICON} alt="" className="seo-brand-icon" width={28} height={28} />
+            <img
+              src={SITE_ICON}
+              alt=""
+              className="seo-brand-icon"
+              width={28}
+              height={28}
+            />
             <span>{SITE_DOMAIN}</span>
           </Link>
           <Link href="/" className="seo-cta">
@@ -29,7 +38,7 @@ export function SeoShell({
         {!hideTabs ? <SeoTabs /> : null}
       </header>
 
-      <main className="seo-main">
+      <main className={bleed ? "seo-main seo-main--bleed" : "seo-main"}>
         {breadcrumb && breadcrumb.length > 0 ? (
           <nav className="seo-breadcrumb" aria-label="Breadcrumb">
             <Link href="/home">Home</Link>
