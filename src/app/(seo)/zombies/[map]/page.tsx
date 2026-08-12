@@ -45,7 +45,7 @@ export default async function ZombiesMapPage({
   return (
     <>
       <nav className="seo-breadcrumb" aria-label="Breadcrumb">
-        <Link href="/home">Home</Link>
+        <Link href="/">Home</Link>
         <span className="seo-breadcrumb-item">
           <span aria-hidden="true">/</span>
           <Link href="/zombies">Zombies</Link>

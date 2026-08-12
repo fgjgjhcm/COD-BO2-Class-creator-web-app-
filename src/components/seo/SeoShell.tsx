@@ -20,7 +20,7 @@ export function SeoShell({
     <div className={`seo-shell${bleed ? " seo-shell--bleed" : ""}`}>
       <header className="seo-header">
         <div className="seo-header-inner">
-          <Link href="/home" className="seo-brand">
+          <Link href="/" className="seo-brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={SITE_ICON}
@@ -31,7 +31,7 @@ export function SeoShell({
             />
             <span>{SITE_DOMAIN}</span>
           </Link>
-          <Link href="/" className="seo-cta">
+          <Link href="/builder" className="seo-cta">
             Open Class Builder
           </Link>
         </div>
@@ -41,7 +41,7 @@ export function SeoShell({
       <main className={bleed ? "seo-main seo-main--bleed" : "seo-main"}>
         {breadcrumb && breadcrumb.length > 0 ? (
           <nav className="seo-breadcrumb" aria-label="Breadcrumb">
-            <Link href="/home">Home</Link>
+            <Link href="/">Home</Link>
             {breadcrumb.map((crumb) => (
               <span key={crumb.label} className="seo-breadcrumb-item">
                 <span aria-hidden="true">/</span>
@@ -63,9 +63,9 @@ export function SeoShell({
           Activision or Treyarch.
         </p>
         <p className="seo-footer-meta">
-          <Link href="/home">{SITE_DOMAIN}</Link>
+          <Link href="/">{SITE_DOMAIN}</Link>
           {" · "}
-          <Link href="/">Class builder</Link>
+          <Link href="/builder">Class builder</Link>
         </p>
       </footer>
     </div>

@@ -86,13 +86,13 @@ export function decodeBuild(encoded: string): ClassBuild | null {
 export function buildShareUrl(build: ClassBuild, origin?: string): string {
   const base =
     origin ??
-    (typeof window !== "undefined" ? window.location.origin + window.location.pathname : "");
+    (typeof window !== "undefined" ? `${window.location.origin}/builder` : "/builder");
   const url = new URL(base, "http://localhost");
   url.searchParams.set(SHARE_PARAM, encodeBuild(build));
   if (origin || typeof window !== "undefined") {
     return `${url.origin}${url.pathname}?${url.searchParams.toString()}`;
   }
-  return `?${url.searchParams.toString()}`;
+  return `/builder?${url.searchParams.toString()}`;
 }
 
 export function readBuildFromSearchParams(

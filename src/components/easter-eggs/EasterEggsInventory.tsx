@@ -41,7 +41,7 @@ export function EasterEggsInventory() {
             <p className="ee-eyebrow">Zombies · Inventory</p>
             <h1 className="ee-title">Easter Eggs</h1>
           </div>
-          <Link href="/" className="seo-cta">
+          <Link href="/builder" className="seo-cta">
             Open Class Builder
           </Link>
         </header>

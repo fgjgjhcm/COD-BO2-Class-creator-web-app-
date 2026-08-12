@@ -27,7 +27,7 @@ export function ItemHero({
         <p className="seo-eyebrow">{eyebrow}</p>
         <h1 className="seo-title">{title}</h1>
         {description ? <p className="seo-lead">{description}</p> : null}
-        <Link href="/" className="seo-cta seo-cta-inline">
+        <Link href="/builder" className="seo-cta seo-cta-inline">
           Open Class Builder
         </Link>
       </div>

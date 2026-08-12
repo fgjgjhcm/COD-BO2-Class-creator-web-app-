@@ -43,7 +43,7 @@ export default function Pick10GuidePage() {
       <h2 className="seo-section-title">Build a class</h2>
       <p>
         Use the{" "}
-        <Link href="/" style={{ color: "var(--accent)" }}>
+        <Link href="/builder" style={{ color: "var(--accent)" }}>
           Create-a-Class builder
         </Link>{" "}
         to allocate all 10 points, save up to five loadouts locally, and share a

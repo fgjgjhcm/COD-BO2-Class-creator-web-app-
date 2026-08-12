@@ -1,4 +1,4 @@
-export const SITE_URL = "https://bo2loadouts.com";
+export const SITE_URL = "https://www.bo2loadouts.com";
 export const SITE_NAME = "BO2 Loadouts";
 /** Display brand in the SEO header */
 export const SITE_DOMAIN = "bo2loadouts.com";

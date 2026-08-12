@@ -33,7 +33,7 @@ export default function AboutPage() {
           Black Ops are trademarks of their respective owners.
         </p>
         <p>
-          <Link href="/" style={{ color: "var(--accent)" }}>
+          <Link href="/builder" style={{ color: "var(--accent)" }}>
             Open the class builder
           </Link>
           {" · "}
