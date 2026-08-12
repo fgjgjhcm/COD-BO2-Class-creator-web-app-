@@ -4,6 +4,7 @@ import { equipment } from "@/data/equipment";
 import { perks } from "@/data/perks";
 import { weapons } from "@/data/weapons";
 import { wildcards } from "@/data/wildcards";
+import { ZWR_MAPS } from "@/lib/zwr";
 import { SITE_URL } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -46,6 +47,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/zombies`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.75,
     },
     {
       url: `${SITE_URL}/guide/pick-10`,
@@ -96,6 +103,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
+  const zombieRoutes = ZWR_MAPS.map((map) => ({
+    url: `${SITE_URL}/zombies/${map.id}`,
+    lastModified: now,
+    changeFrequency: "daily" as const,
+    priority: 0.65,
+  }));
+
   return [
     ...staticRoutes,
     ...weaponRoutes,
@@ -103,5 +117,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...perkRoutes,
     ...equipmentRoutes,
     ...wildcardRoutes,
+    ...zombieRoutes,
   ];
 }

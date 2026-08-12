@@ -1425,6 +1425,229 @@ body::before {
   gap: 0.65rem 1rem;
 }
 
+/* —— Zombies / ZWR leaderboards —— */
+.zombies-status {
+  margin: 0.75rem 0 0;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.zombies-map-grid {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 0.75rem;
+}
+
+.zombies-map-link {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 9.5rem;
+  padding: 0;
+  overflow: hidden;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: #121212;
+  background-size: cover;
+  background-position: center;
+  isolation: isolate;
+}
+
+.zombies-map-link:hover {
+  border-color: rgba(255, 122, 0, 0.55);
+}
+
+.zombies-map-link:hover .zombies-map-shade {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.55) 45%,
+    rgba(0, 0, 0, 0.88) 100%
+  );
+}
+
+.zombies-map-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.62) 48%,
+    rgba(0, 0, 0, 0.92) 100%
+  );
+  transition: background 160ms ease;
+}
+
+.zombies-map-copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 100%;
+  padding: 0.95rem 0.9rem;
+}
+
+.zombies-map-name {
+  color: #fff;
+  font-family: var(--font-display-stack);
+  font-size: 1.2rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.75);
+}
+
+.zombies-map-meta {
+  color: #d4d4d4;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+
+.zombies-attribution {
+  margin: 2rem 0 0;
+  max-width: 40rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.zombies-attribution a {
+  color: var(--accent);
+}
+
+.zombies-board {
+  margin-top: 1.25rem;
+}
+
+.zombies-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+}
+
+.zombies-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-body-stack);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.zombies-tab:hover:not(:disabled) {
+  color: var(--text);
+  border-color: #4a4a4a;
+}
+
+.zombies-tab.is-active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.zombies-tab:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.zombies-tab-count {
+  color: #666;
+  font-size: 0.65rem;
+}
+
+.zombies-tab.is-active .zombies-tab-count {
+  color: var(--accent);
+}
+
+.zombies-empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.zombies-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+}
+
+.zombies-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.zombies-table th,
+.zombies-table td {
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: middle;
+}
+
+.zombies-table th {
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.zombies-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.zombies-table a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.zombies-table a:hover {
+  color: var(--accent);
+}
+
+.zombies-rank {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  width: 3.5rem;
+}
+
+.zombies-round {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--accent-hot);
+}
+
+.zombies-platform {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.zombies-evidence {
+  color: var(--accent) !important;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.zombies-players {
+  line-height: 1.35;
+}
+
 .cac-seo-links {
   display: flex;
   flex-wrap: wrap;
