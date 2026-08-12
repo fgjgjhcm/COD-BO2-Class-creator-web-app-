@@ -21,6 +21,7 @@ import {
 import { canAffordNewItem } from "@/lib/pick10";
 import { ItemIcon } from "@/components/ItemIcon";
 import type { ItemImageFolder } from "@/lib/icons";
+import { DSR_50_ID, playDsrEasterEgg, playUiSound } from "@/lib/uiSound";
 
 interface ItemSelectorProps {
   open: boolean;
@@ -281,6 +282,14 @@ export function ItemSelector({
                     key={item.id}
                     type="button"
                     disabled={disabled}
+                    onPointerDown={() => {
+                      if (!disabled) {
+                        playUiSound("select-weapon");
+                        if (item.id === DSR_50_ID) {
+                          playDsrEasterEgg();
+                        }
+                      }
+                    }}
                     onClick={() => onSelect(item.id)}
                     className={[
                       "selector-item group flex items-center gap-3 p-3 text-left transition",

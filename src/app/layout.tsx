@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Saira_Condensed, Saira_Extra_Condensed } from "next/font/google";
 import { LoadingProvider } from "@/components/LoadingScreen";
+import { UiSoundProvider } from "@/components/UiSoundProvider";
+import { AfterlifeProvider } from "@/components/easter-eggs/AfterlifeProvider";
+import { TeddyBearLink } from "@/components/easter-eggs/TeddyBearLink";
 import "./globals.css";
 
 // Agency FB Bold is what BO2 uses, but it's commercial/licensed.
@@ -49,7 +52,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full">
         <LoadingProvider>
-          <div className="app-shell">{children}</div>
+          <UiSoundProvider>
+            <AfterlifeProvider>
+              <div className="app-shell">{children}</div>
+              <TeddyBearLink />
+            </AfterlifeProvider>
+          </UiSoundProvider>
         </LoadingProvider>
       </body>
     </html>

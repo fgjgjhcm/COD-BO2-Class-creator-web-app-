@@ -107,6 +107,7 @@ export function ClassBuilder() {
           <span className="text-[var(--accent)]">{shareMessage}</span>
         ) : null}
         <nav className="cac-seo-links" aria-label="Reference">
+          <a href="/home">Home</a>
           <a href="/weapons">Weapons</a>
           <a href="/perks">Perks</a>
           <a href="/attachments">Attachments</a>

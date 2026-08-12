@@ -23,6 +23,7 @@ import {
   saveLoadoutsState,
 } from "@/lib/storage";
 import { buildShareUrl, readBuildFromSearchParams } from "@/lib/share";
+import { celebrateEasterEggUnlock } from "@/lib/uiSound";
 
 function replaceAt(
   list: (string | null)[],
@@ -83,6 +84,15 @@ export function useClassBuild() {
     if (!hydrated) return;
     saveLoadoutsState({ activeIndex, slots });
   }, [slots, activeIndex, hydrated]);
+
+  // Nuke EE: unlock when Pick 10 points across all 5 classes total 30+.
+  useEffect(() => {
+    if (!hydrated) return;
+    const total = slots.reduce((sum, slot) => sum + countUsedPoints(slot), 0);
+    if (total >= 30) {
+      celebrateEasterEggUnlock("nuke_points");
+    }
+  }, [slots, hydrated]);
 
   const usedPoints = useMemo(() => countUsedPoints(build), [build]);
   const remainingPoints = useMemo(() => getRemainingPoints(build), [build]);
@@ -477,13 +487,43 @@ export function useClassBuild() {
 
   const shareClass = useCallback(async () => {
     const url = buildShareUrl(build);
-    try {
-      await navigator.clipboard.writeText(url);
-      setShareMessage("Class URL copied");
-      window.history.replaceState({}, "", url);
-    } catch {
-      setShareMessage("Could not copy — URL updated in address bar");
-      window.history.replaceState({}, "", url);
+    const title = build.name?.trim() || "BO2 Class";
+    const text = `Check out my Black Ops II Pick 10 class: ${title}`;
+    let shared = false;
+
+    // Mobile / supporting browsers: system share sheet (Messages, Mail, etc.)
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title, text, url });
+        shared = true;
+        setShareMessage("Class shared");
+      } catch (error) {
+        // User canceled the sheet — don't treat as a share unlock.
+        if (
+          error instanceof DOMException &&
+          (error.name === "AbortError" || error.name === "NotAllowedError")
+        ) {
+          setShareMessage(null);
+          return;
+        }
+      }
+    }
+
+    if (!shared) {
+      try {
+        await navigator.clipboard.writeText(url);
+        shared = true;
+        setShareMessage("Class URL copied");
+      } catch {
+        setShareMessage("Could not copy — URL updated in address bar");
+        // Still count as shared so desktop users aren't blocked.
+        shared = true;
+      }
+    }
+
+    window.history.replaceState({}, "", url);
+    if (shared) {
+      celebrateEasterEggUnlock("share_class");
     }
     window.setTimeout(() => setShareMessage(null), 2500);
   }, [build]);

@@ -5,6 +5,7 @@ import { CacRow, CacSlot } from "@/components/CacSlot";
 import { resolveItem } from "@/lib/items";
 import { weaponSupportsAttachments } from "@/data/weapons";
 import type { SelectorTarget } from "@/types/class";
+import { DSR_50_ID, playDsrEasterEgg } from "@/lib/uiSound";
 
 interface ClassBuilderBoardProps {
   controller: ClassBuildController;
@@ -40,7 +41,12 @@ export function ClassBuilderBoard({ controller }: ClassBuilderBoardProps) {
               active={isActive({ kind: "primaryWeapon", index: 0 })}
               item={primaryWeapon}
               imageFolder="weapons"
-              onClick={() => openSelector({ kind: "primaryWeapon", index: 0 })}
+              onClick={() => {
+                if (primaryWeapon?.id === DSR_50_ID) {
+                  playDsrEasterEgg();
+                }
+                openSelector({ kind: "primaryWeapon", index: 0 });
+              }}
               onClear={
                 primaryWeapon
                   ? () => clearSelection({ kind: "primaryWeapon", index: 0 })
@@ -67,7 +73,12 @@ export function ClassBuilderBoard({ controller }: ClassBuilderBoardProps) {
               active={isActive({ kind: "secondaryWeapon", index: 0 })}
               item={secondaryWeapon}
               imageFolder="weapons"
-              onClick={() => openSelector({ kind: "secondaryWeapon", index: 0 })}
+              onClick={() => {
+                if (secondaryWeapon?.id === DSR_50_ID) {
+                  playDsrEasterEgg();
+                }
+                openSelector({ kind: "secondaryWeapon", index: 0 });
+              }}
               onClear={
                 secondaryWeapon
                   ? () => clearSelection({ kind: "secondaryWeapon", index: 0 })

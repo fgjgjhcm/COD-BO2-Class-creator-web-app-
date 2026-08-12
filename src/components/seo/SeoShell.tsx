@@ -1,38 +1,38 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { SEO_NAV, SITE_NAME } from "@/lib/site";
+import { SeoTabs } from "@/components/seo/SeoTabs";
+import { SITE_DOMAIN, SITE_ICON } from "@/lib/site";
 
 export function SeoShell({
   children,
   breadcrumb,
+  hideTabs = false,
 }: {
   children: ReactNode;
   breadcrumb?: { label: string; href?: string }[];
+  /** Home page uses its own large section tabs */
+  hideTabs?: boolean;
 }) {
   return (
     <div className="seo-shell">
       <header className="seo-header">
         <div className="seo-header-inner">
-          <Link href="/" className="seo-brand">
-            {SITE_NAME}
+          <Link href="/home" className="seo-brand">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={SITE_ICON} alt="" className="seo-brand-icon" width={28} height={28} />
+            <span>{SITE_DOMAIN}</span>
           </Link>
-          <nav className="seo-nav" aria-label="Site">
-            {SEO_NAV.map((item) => (
-              <Link key={item.href} href={item.href} className="seo-nav-link">
-                {item.label}
-              </Link>
-            ))}
-          </nav>
           <Link href="/" className="seo-cta">
             Open Class Builder
           </Link>
         </div>
+        {!hideTabs ? <SeoTabs /> : null}
       </header>
 
       <main className="seo-main">
         {breadcrumb && breadcrumb.length > 0 ? (
           <nav className="seo-breadcrumb" aria-label="Breadcrumb">
-            <Link href="/">Home</Link>
+            <Link href="/home">Home</Link>
             {breadcrumb.map((crumb) => (
               <span key={crumb.label} className="seo-breadcrumb-item">
                 <span aria-hidden="true">/</span>
@@ -53,13 +53,11 @@ export function SeoShell({
           Fan-made Black Ops II Create-a-Class tool. Not affiliated with
           Activision or Treyarch.
         </p>
-        <div className="seo-footer-links">
-          {SEO_NAV.map((item) => (
-            <Link key={item.href} href={item.href}>
-              {item.label}
-            </Link>
-          ))}
-        </div>
+        <p className="seo-footer-meta">
+          <Link href="/home">{SITE_DOMAIN}</Link>
+          {" · "}
+          <Link href="/">Class builder</Link>
+        </p>
       </footer>
     </div>
   );
