@@ -1256,20 +1256,6 @@ body::before {
   line-height: 1.45;
 }
 
-.ee-columns {
-  display: grid;
-  gap: 1.25rem;
-}
-
-.ee-column-title {
-  margin: 0 0 0.55rem;
-  font-family: var(--font-display-stack);
-  font-size: 1.1rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #e8eef4;
-}
-
 .ee-group-title {
   margin: 0 0 0.45rem;
   font-size: 0.72rem;
@@ -1620,16 +1606,4 @@ html.afterlife-active .teddy-float {
     inset 0 0 18px rgba(100, 220, 255, 0.25),
     0 0 24px rgba(80, 200, 255, 0.35);
 }
-
-.ee-columns {
-  display: grid;
-  gap: 1.5rem;
-}
-
-@media (min-width: 720px) {
-  .ee-columns {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 

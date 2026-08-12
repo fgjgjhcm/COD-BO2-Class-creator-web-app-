@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   EASTER_EGG_UNLOCK_EVENT,
   EASTER_EGGS,
-  groupEasterEggsByCategory,
   isEasterEggUnlocked,
   markEasterEggsViewed,
   type EasterEggsState,
@@ -33,7 +32,6 @@ export function EasterEggsInventory() {
 
   const found = hydrated ? state.unlocked.length : 0;
   const total = EASTER_EGGS.length;
-  const groups = groupEasterEggsByCategory();
 
   return (
     <div className="ee-screen">
@@ -48,50 +46,38 @@ export function EasterEggsInventory() {
           </Link>
         </header>
 
-        <p className="ee-lead">
-          Explore the site. Secrets unlock here as black silhouettes turn into
-          full icons — just like Origins quest parts.
-        </p>
+        <p className="ee-lead">Explore the site. Secrets unlock here.</p>
 
-        <div className="ee-columns">
-          {groups.map((group) => (
-            <section key={group.category} className="ee-column">
-              <h2 className="ee-column-title">{group.category}</h2>
-              <div className="ee-group">
-                <h3 className="ee-group-title">Secrets</h3>
-                <ul className="ee-slots">
-                  {group.eggs.map((egg) => {
-                    const unlocked =
-                      hydrated && isEasterEggUnlocked(state, egg.id);
-                    return (
-                      <li key={egg.id} className="ee-slot-wrap">
-                        <div
-                          className={`ee-slot${unlocked ? " is-unlocked" : " is-locked"}`}
-                          title={unlocked ? egg.name : "Undiscovered"}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={
-                              unlocked ? egg.unlockedIcon : egg.lockedIcon
-                            }
-                            alt={unlocked ? egg.name : ""}
-                            className="ee-slot-icon"
-                          />
-                        </div>
-                        <p className="ee-slot-caption">
-                          {unlocked ? egg.name : "???"}
-                        </p>
-                        <p className="ee-slot-hint">
-                          {unlocked ? egg.description : egg.hint}
-                        </p>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            </section>
-          ))}
-        </div>
+        <section className="ee-group">
+          <h2 className="ee-group-title">Secrets</h2>
+          <ul className="ee-slots">
+            {EASTER_EGGS.map((egg) => {
+              const unlocked =
+                hydrated && isEasterEggUnlocked(state, egg.id);
+              return (
+                <li key={egg.id} className="ee-slot-wrap">
+                  <div
+                    className={`ee-slot${unlocked ? " is-unlocked" : " is-locked"}`}
+                    title={unlocked ? egg.name : "Undiscovered"}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={unlocked ? egg.unlockedIcon : egg.lockedIcon}
+                      alt={unlocked ? egg.name : ""}
+                      className="ee-slot-icon"
+                    />
+                  </div>
+                  <p className="ee-slot-caption">
+                    {unlocked ? egg.name : "???"}
+                  </p>
+                  <p className="ee-slot-hint">
+                    {unlocked ? egg.description : egg.hint}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       </div>
 
       <div className="ee-scoreboard">

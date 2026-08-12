@@ -140,15 +140,3 @@ export function markEasterEggsViewed(): EasterEggsState {
   return next;
 }
 
-export function groupEasterEggsByCategory(): {
-  category: string;
-  eggs: EasterEggDef[];
-}[] {
-  const map = new Map<string, EasterEggDef[]>();
-  for (const egg of EASTER_EGGS) {
-    const list = map.get(egg.category) ?? [];
-    list.push(egg);
-    map.set(egg.category, list);
-  }
-  return [...map.entries()].map(([category, eggs]) => ({ category, eggs }));
-}
