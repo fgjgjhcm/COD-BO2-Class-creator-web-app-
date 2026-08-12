@@ -1,5 +1,5 @@
 import type { ClassBuild } from "@/types/class";
-import type { LoadoutRow, Profile } from "@/types/database";
+import type { EmblemRow, LoadoutRow, Profile } from "@/types/database";
 import type { Json } from "@/types/database";
 
 export type CommunitySort = "trending" | "new" | "top";
@@ -12,6 +12,11 @@ export interface CommunityLoadout extends LoadoutRow {
   remix_of_slug?: string | null;
   liked_by_me?: boolean;
   saved_by_me?: boolean;
+}
+
+export interface CommunityEmblem extends EmblemRow {
+  profile: Pick<Profile, "id" | "username" | "display_name" | "avatar_url"> | null;
+  layer_count?: number;
 }
 
 export interface PublishLoadoutInput {

@@ -3,11 +3,13 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 import {
   COMMUNITY_PAGE_SIZE,
   trendingScore,
+  type CommunityEmblem,
   type CommunityListParams,
   type CommunityLoadout,
 } from "@/types/community";
 import type { Profile } from "@/types/database";
 import { parseClassBuild } from "@/lib/community/validate";
+import { parseEmblemCode } from "@/lib/community/emblemCode";
 
 type ProfileLite = Pick<
   Profile,
@@ -324,4 +326,105 @@ export async function isFollowingUser(targetUserId: string) {
     .eq("following_id", targetUserId)
     .maybeSingle();
   return Boolean(data);
+}
+
+type EmblemProfileLite = Pick<
+  Profile,
+  "id" | "username" | "display_name" | "avatar_url"
+>;
+
+function mapEmblemRow(
+  row: {
+    id: string;
+    user_id: string;
+    title: string;
+    description: string | null;
+    slug: string;
+    emblem_code: string;
+    preview_url: string | null;
+    remix_of: string | null;
+    like_count: number;
+    save_count: number;
+    created_at: string;
+    updated_at: string;
+    profiles?: EmblemProfileLite | EmblemProfileLite[] | null;
+  },
+): CommunityEmblem {
+  const profileRaw = row.profiles;
+  const profile = Array.isArray(profileRaw)
+    ? profileRaw[0] ?? null
+    : profileRaw ?? null;
+  const parsed = parseEmblemCode(row.emblem_code);
+  return {
+    id: row.id,
+    user_id: row.user_id,
+    title: row.title,
+    description: row.description,
+    slug: row.slug,
+    emblem_code: row.emblem_code,
+    preview_url: row.preview_url,
+    remix_of: row.remix_of,
+    like_count: row.like_count,
+    save_count: row.save_count,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    profile,
+    layer_count: parsed?.layerCount ?? 0,
+  };
+}
+
+export async function listCommunityEmblems(
+  params: CommunityListParams = {},
+): Promise<{ items: CommunityEmblem[]; total: number }> {
+  if (!isSupabaseConfigured()) return { items: [], total: 0 };
+
+  const supabase = await createClient();
+  const page = Math.max(1, params.page ?? 1);
+  const pageSize = params.pageSize ?? COMMUNITY_PAGE_SIZE;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const sort = params.sort ?? "new";
+  const q = params.q?.trim();
+
+  let query = supabase.from("emblems").select(
+    "*, profiles!emblems_user_id_fkey(id, username, display_name, avatar_url)",
+    { count: "exact" },
+  );
+
+  if (sort === "top") {
+    query = query
+      .order("like_count", { ascending: false })
+      .order("created_at", { ascending: false });
+  } else {
+    query = query.order("created_at", { ascending: false });
+  }
+
+  if (q) query = query.or(`title.ilike.%${q}%`);
+
+  const { data, error, count } = await query.range(from, to);
+  if (error) {
+    console.error("listCommunityEmblems", error);
+    return { items: [], total: 0 };
+  }
+
+  return {
+    items: (data ?? []).map((row) => mapEmblemRow(row as never)),
+    total: count ?? 0,
+  };
+}
+
+export async function getEmblemBySlug(
+  slug: string,
+): Promise<CommunityEmblem | null> {
+  if (!isSupabaseConfigured()) return null;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("emblems")
+    .select(
+      "*, profiles!emblems_user_id_fkey(id, username, display_name, avatar_url)",
+    )
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error || !data) return null;
+  return mapEmblemRow(data as never);
 }

@@ -3314,6 +3314,69 @@ html.afterlife-active .teddy-float {
   max-width: 36rem;
 }
 
+.community-emblem-card-media {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  background: #101010;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.community-emblem-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.community-emblem-card-placeholder {
+  color: #777;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 1rem;
+  text-align: center;
+}
+
+.community-emblem-card-placeholder--lg {
+  min-height: 14rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #101010;
+}
+
+.community-emblem-preview-thumb {
+  width: 4.5rem;
+  height: 4.5rem;
+  object-fit: contain;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: #101010;
+  flex-shrink: 0;
+}
+
+.community-emblem-preview-thumb--empty {
+  display: grid;
+  place-items: center;
+  color: #666;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.community-emblem-detail-preview {
+  margin: 1rem 0 1.25rem;
+  max-width: 22rem;
+  background: #101010;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.community-emblem-detail-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 @media (max-width: 720px) {
   .community-card-actions {
     gap: 0.35rem;

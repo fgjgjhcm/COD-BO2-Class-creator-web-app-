@@ -159,6 +159,51 @@ export type Database = {
         };
         Relationships: [];
       };
+      emblems: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          description: string | null;
+          slug: string;
+          emblem_code: string;
+          preview_url: string | null;
+          remix_of: string | null;
+          like_count: number;
+          save_count: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          description?: string | null;
+          slug: string;
+          emblem_code: string;
+          preview_url?: string | null;
+          remix_of?: string | null;
+          like_count?: number;
+          save_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          description?: string | null;
+          slug?: string;
+          emblem_code?: string;
+          preview_url?: string | null;
+          remix_of?: string | null;
+          like_count?: number;
+          save_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -176,6 +221,7 @@ export type Database = {
 };
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+export type EmblemRow = Database["public"]["Tables"]["emblems"]["Row"];
 export type LoadoutRow = Omit<
   Database["public"]["Tables"]["loadouts"]["Row"],
   "loadout_data"

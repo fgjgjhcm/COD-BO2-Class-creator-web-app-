@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseEnv, isSupabaseConfigured } from "@/lib/supabase/env";
 import { uniqueSlug, isValidUsername, normalizeUsername } from "@/lib/community/slug";
+import { parseEmblemCode } from "@/lib/community/emblemCode";
 import {
   parseClassBuild,
   validateClassBuild,
@@ -356,5 +357,109 @@ export async function reportLoadoutAction(input: {
     reason: input.reason?.trim().slice(0, 300) || null,
   });
   if (error) return { ok: false, error: error.message };
+  return { ok: true, data: undefined };
+}
+
+export async function publishEmblemAction(input: {
+  title: string;
+  description?: string;
+  emblemCode: string;
+  previewUrl?: string | null;
+}): Promise<ActionResult<{ slug: string; id: string; layerCount: number }>> {
+  const auth = await requireUser();
+  if (auth.error || !auth.user || !auth.supabase) {
+    return { ok: false, error: auth.error ?? "Sign in required." };
+  }
+
+  const { data: profile } = await auth.supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", auth.user.id)
+    .maybeSingle();
+
+  if (!profile?.username) {
+    return { ok: false, error: "Choose a username before publishing." };
+  }
+
+  const title = input.title.trim().slice(0, 64);
+  if (!title) return { ok: false, error: "Title is required." };
+
+  const emblemCode = input.emblemCode.trim();
+  const parsed = parseEmblemCode(emblemCode);
+  if (!parsed) {
+    return {
+      ok: false,
+      error: "Invalid emblem code. Paste a SAVE code from the BO2 emblem editor.",
+    };
+  }
+  if (parsed.layerCount < 1) {
+    return { ok: false, error: "Emblem code has no layers." };
+  }
+
+  let previewUrl = input.previewUrl?.trim() || null;
+  if (previewUrl) {
+    const env = getSupabaseEnv();
+    const prefix = env
+      ? `${env.url.replace(/\/$/, "")}/storage/v1/object/public/emblem-previews/`
+      : null;
+    if (!prefix || !previewUrl.startsWith(prefix)) {
+      return { ok: false, error: "Invalid preview image URL." };
+    }
+  }
+
+  const slug = uniqueSlug(title);
+  const { data, error } = await auth.supabase
+    .from("emblems")
+    .insert({
+      user_id: auth.user.id,
+      title,
+      description: input.description?.trim().slice(0, 500) || null,
+      slug,
+      emblem_code: emblemCode,
+      preview_url: previewUrl,
+    })
+    .select("id, slug")
+    .single();
+
+  if (error || !data) {
+    return { ok: false, error: error?.message ?? "Failed to publish emblem." };
+  }
+
+  revalidatePath("/community");
+  revalidatePath("/community/emblems");
+  revalidatePath(`/community/emblem/${data.slug}`);
+  return {
+    ok: true,
+    data: { slug: data.slug, id: data.id, layerCount: parsed.layerCount },
+  };
+}
+
+export async function deleteEmblemAction(
+  emblemId: string,
+): Promise<ActionResult> {
+  const auth = await requireUser();
+  if (auth.error || !auth.user || !auth.supabase) {
+    return { ok: false, error: auth.error ?? "Sign in required." };
+  }
+
+  const { data: existing } = await auth.supabase
+    .from("emblems")
+    .select("id, slug")
+    .eq("id", emblemId)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (!existing) return { ok: false, error: "Emblem not found." };
+
+  const { error } = await auth.supabase
+    .from("emblems")
+    .delete()
+    .eq("id", emblemId)
+    .eq("user_id", auth.user.id);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/community");
+  revalidatePath("/community/emblems");
+  revalidatePath(`/community/emblem/${existing.slug}`);
   return { ok: true, data: undefined };
 }
