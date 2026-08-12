@@ -74,7 +74,7 @@ export default async function CommunityEmblemsPage() {
             <CommunityEmblemCard
               key={emblem.id}
               emblem={emblem}
-              canDelete={me?.id === emblem.user_id}
+              canManage={me?.id === emblem.user_id}
             />
           ))}
         </div>

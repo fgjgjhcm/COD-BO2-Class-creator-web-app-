@@ -6,6 +6,7 @@ import { LoadoutPreview } from "@/components/community/LoadoutPreview";
 import { LikeButton } from "@/components/community/LikeButton";
 import { SaveButton } from "@/components/community/SaveButton";
 import { DeleteLoadoutButton } from "@/components/community/DeleteLoadoutButton";
+import { OwnerVisibilityButton } from "@/components/community/OwnerVisibilityButton";
 import { UserBadge } from "@/components/community/UserBadge";
 import { ReportButton } from "@/components/community/ReportButton";
 import { getLoadoutBySlug, getMyProfile } from "@/lib/community/queries";
@@ -20,6 +21,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const loadout = await getLoadoutBySlug(slug);
   if (!loadout) return { title: "Loadout" };
+  if (!loadout.is_public) {
+    return {
+      title: { absolute: `${loadout.title} | BO2 Loadout` },
+      robots: { index: false, follow: false },
+    };
+  }
   return {
     title: { absolute: `${loadout.title} | BO2 Community` },
     description:
@@ -58,6 +65,9 @@ export default async function CommunityLoadoutPage({ params }: Props) {
         <UserBadge profile={loadout.profile} />
         <span>{points}/10 Pick 10</span>
         <span>{new Date(loadout.created_at).toLocaleDateString()}</span>
+        {!loadout.is_public ? (
+          <span className="community-vis-badge">Private</span>
+        ) : null}
       </div>
 
       {loadout.remix_of_slug ? (
@@ -91,10 +101,17 @@ export default async function CommunityLoadoutPage({ params }: Props) {
           initialCount={loadout.save_count}
         />
         {isOwner ? (
-          <DeleteLoadoutButton
-            loadoutId={loadout.id}
-            redirectTo={ownerProfileHref}
-          />
+          <>
+            <OwnerVisibilityButton
+              kind="loadout"
+              id={loadout.id}
+              isPublic={loadout.is_public}
+            />
+            <DeleteLoadoutButton
+              loadoutId={loadout.id}
+              redirectTo={ownerProfileHref}
+            />
+          </>
         ) : null}
       </div>
 

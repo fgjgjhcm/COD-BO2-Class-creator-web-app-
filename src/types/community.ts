@@ -6,8 +6,20 @@ export type CommunitySort = "trending" | "new" | "top";
 
 export type CommunityTab = CommunitySort | "loadouts" | "emblems";
 
+export type CommunityProfile = Pick<
+  Profile,
+  "id" | "username" | "display_name" | "avatar_url" | "current_emblem_id"
+> & {
+  current_emblem?: {
+    id: string;
+    title: string;
+    slug: string;
+    preview_url: string | null;
+  } | null;
+};
+
 export interface CommunityLoadout extends LoadoutRow {
-  profile: Pick<Profile, "id" | "username" | "display_name" | "avatar_url"> | null;
+  profile: CommunityProfile | null;
   remix_of_title?: string | null;
   remix_of_slug?: string | null;
   liked_by_me?: boolean;
@@ -15,8 +27,9 @@ export interface CommunityLoadout extends LoadoutRow {
 }
 
 export interface CommunityEmblem extends EmblemRow {
-  profile: Pick<Profile, "id" | "username" | "display_name" | "avatar_url"> | null;
+  profile: CommunityProfile | null;
   layer_count?: number;
+  is_current?: boolean;
 }
 
 export interface PublishLoadoutInput {

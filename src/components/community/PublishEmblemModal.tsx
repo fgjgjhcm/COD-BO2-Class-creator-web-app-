@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { publishEmblemAction } from "@/lib/community/actions";
 import { EXTERNAL_EMBLEM_EDITOR_URL } from "@/lib/community/emblemLinks";
+import { VisibilityToggle } from "@/components/community/VisibilityToggle";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { UsernameGate } from "@/components/community/UsernameGate";
@@ -23,6 +24,8 @@ export function PublishEmblemModal({
   const [description, setDescription] = useState("");
   const [emblemCode, setEmblemCode] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(true);
+  const [setAsCurrent, setSetAsCurrent] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [needsUsername, setNeedsUsername] = useState(false);
   const [checking, setChecking] = useState(false);
@@ -35,6 +38,8 @@ export function PublishEmblemModal({
     setDescription("");
     setEmblemCode("");
     setPreviewUrl(null);
+    setIsPublic(true);
+    setSetAsCurrent(true);
     setError(null);
     setNeedsUsername(false);
 
@@ -109,6 +114,8 @@ export function PublishEmblemModal({
                   description,
                   emblemCode,
                   previewUrl,
+                  isPublic,
+                  setAsCurrent,
                 });
                 if (!result.ok) {
                   setError(result.error);
@@ -255,6 +262,23 @@ export function PublishEmblemModal({
               </div>
             </div>
 
+            <VisibilityToggle
+              isPublic={isPublic}
+              onChange={setIsPublic}
+              disabled={pending || uploading}
+              name="emblem-visibility"
+            />
+
+            <label className="community-check">
+              <input
+                type="checkbox"
+                checked={setAsCurrent}
+                onChange={(e) => setSetAsCurrent(e.target.checked)}
+                disabled={pending || uploading}
+              />
+              <span>Set as my current emblem (shows on profile + username hover)</span>
+            </label>
+
             {error ? <p className="community-error">{error}</p> : null}
 
             <div className="community-modal-actions">
@@ -270,7 +294,7 @@ export function PublishEmblemModal({
                 className="seo-cta"
                 disabled={pending || uploading}
               >
-                {pending ? "Publishing…" : "Publish"}
+                {pending ? "Publishing…" : isPublic ? "Publish" : "Save private"}
               </button>
             </div>
           </form>

@@ -6,15 +6,54 @@ import {
   type CommunityEmblem,
   type CommunityListParams,
   type CommunityLoadout,
+  type CommunityProfile,
 } from "@/types/community";
 import type { Profile } from "@/types/database";
 import { parseClassBuild } from "@/lib/community/validate";
 import { parseEmblemCode } from "@/lib/community/emblemCode";
 
-type ProfileLite = Pick<
-  Profile,
-  "id" | "username" | "display_name" | "avatar_url"
->;
+type CurrentEmblemLite = {
+  id: string;
+  title: string;
+  slug: string;
+  preview_url: string | null;
+};
+
+type ProfileEmbed = {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  current_emblem_id?: string | null;
+  current_emblem?: CurrentEmblemLite | CurrentEmblemLite[] | null;
+};
+
+const LOADOUT_PROFILE_EMBED =
+  "profiles!loadouts_user_id_fkey(id, username, display_name, avatar_url, current_emblem_id, current_emblem:emblems!profiles_current_emblem_id_fkey(id, title, slug, preview_url))";
+
+const EMBLEM_PROFILE_EMBED =
+  "profiles!emblems_user_id_fkey(id, username, display_name, avatar_url, current_emblem_id, current_emblem:emblems!profiles_current_emblem_id_fkey(id, title, slug, preview_url))";
+
+function mapProfile(
+  profileRaw: ProfileEmbed | ProfileEmbed[] | null | undefined,
+): CommunityProfile | null {
+  const profile = Array.isArray(profileRaw)
+    ? profileRaw[0] ?? null
+    : profileRaw ?? null;
+  if (!profile) return null;
+  const emblemRaw = profile.current_emblem;
+  const current_emblem = Array.isArray(emblemRaw)
+    ? emblemRaw[0] ?? null
+    : emblemRaw ?? null;
+  return {
+    id: profile.id,
+    username: profile.username,
+    display_name: profile.display_name,
+    avatar_url: profile.avatar_url,
+    current_emblem_id: profile.current_emblem_id ?? null,
+    current_emblem,
+  };
+}
 
 function mapRow(
   row: {
@@ -27,17 +66,13 @@ function mapRow(
     remix_of: string | null;
     like_count: number;
     save_count: number;
+    is_public?: boolean;
     created_at: string;
     updated_at: string;
-    profiles?: ProfileLite | ProfileLite[] | null;
+    profiles?: ProfileEmbed | ProfileEmbed[] | null;
   },
   extras?: Partial<CommunityLoadout>,
 ): CommunityLoadout {
-  const profileRaw = row.profiles;
-  const profile = Array.isArray(profileRaw)
-    ? profileRaw[0] ?? null
-    : profileRaw ?? null;
-
   const build = parseClassBuild(row.loadout_data);
   return {
     id: row.id,
@@ -49,9 +84,10 @@ function mapRow(
     remix_of: row.remix_of,
     like_count: row.like_count,
     save_count: row.save_count,
+    is_public: row.is_public ?? true,
     created_at: row.created_at,
     updated_at: row.updated_at,
-    profile,
+    profile: mapProfile(row.profiles),
     ...extras,
   };
 }
@@ -71,7 +107,9 @@ export async function getMyProfile() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("*")
+    .select(
+      "*, current_emblem:emblems!profiles_current_emblem_id_fkey(id, title, slug, preview_url)",
+    )
     .eq("id", user.id)
     .maybeSingle();
   return data;
@@ -92,14 +130,11 @@ export async function listCommunityLoadouts(
   const sort = params.sort ?? "new";
   const q = params.q?.trim();
 
-  // Trending: fetch a window and sort in memory (simple v1 formula).
   if (sort === "trending") {
     let query = supabase
       .from("loadouts")
-      .select(
-        "*, profiles!loadouts_user_id_fkey(id, username, display_name, avatar_url)",
-        { count: "exact" },
-      )
+      .select(`*, ${LOADOUT_PROFILE_EMBED}`, { count: "exact" })
+      .eq("is_public", true)
       .order("created_at", { ascending: false })
       .limit(120);
 
@@ -132,10 +167,8 @@ export async function listCommunityLoadouts(
 
   let query = supabase
     .from("loadouts")
-    .select(
-      "*, profiles!loadouts_user_id_fkey(id, username, display_name, avatar_url)",
-      { count: "exact" },
-    );
+    .select(`*, ${LOADOUT_PROFILE_EMBED}`, { count: "exact" })
+    .eq("is_public", true);
 
   if (sort === "top") {
     query = query
@@ -146,7 +179,6 @@ export async function listCommunityLoadouts(
   }
 
   if (q) {
-    // Title search; username filter via nested profile is limited — also try exact username match.
     query = query.or(`title.ilike.%${q}%`);
   }
   if (params.weapon) {
@@ -161,7 +193,6 @@ export async function listCommunityLoadouts(
 
   let items = (data ?? []).map((row) => mapRow(row as never));
 
-  // Optional username search pass when q looks like a handle.
   if (q && items.length === 0) {
     const { data: byUser } = await supabase
       .from("profiles")
@@ -172,10 +203,8 @@ export async function listCommunityLoadouts(
     if (ids.length) {
       let userQuery = supabase
         .from("loadouts")
-        .select(
-          "*, profiles!loadouts_user_id_fkey(id, username, display_name, avatar_url)",
-          { count: "exact" },
-        )
+        .select(`*, ${LOADOUT_PROFILE_EMBED}`, { count: "exact" })
+        .eq("is_public", true)
         .in("user_id", ids)
         .order("created_at", { ascending: false })
         .range(from, to);
@@ -201,9 +230,7 @@ export async function getLoadoutBySlug(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("loadouts")
-    .select(
-      "*, profiles!loadouts_user_id_fkey(id, username, display_name, avatar_url)",
-    )
+    .select(`*, ${LOADOUT_PROFILE_EMBED}`)
     .eq("slug", slug)
     .maybeSingle();
 
@@ -252,9 +279,7 @@ export async function getLoadoutById(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("loadouts")
-    .select(
-      "*, profiles!loadouts_user_id_fkey(id, username, display_name, avatar_url)",
-    )
+    .select(`*, ${LOADOUT_PROFILE_EMBED}`)
     .eq("id", id)
     .maybeSingle();
   if (error || !data) return null;
@@ -266,23 +291,48 @@ export async function getProfileByUsername(username: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("*")
+    .select(
+      "*, current_emblem:emblems!profiles_current_emblem_id_fkey(id, title, slug, preview_url, is_public)",
+    )
     .eq("username", username.toLowerCase())
     .maybeSingle();
   return data;
 }
 
-export async function listLoadoutsByUser(userId: string) {
+export async function listLoadoutsByUser(
+  userId: string,
+  opts?: { includePrivate?: boolean },
+) {
   if (!isSupabaseConfigured()) return [];
   const supabase = await createClient();
-  const { data } = await supabase
+  let query = supabase
     .from("loadouts")
-    .select(
-      "*, profiles!loadouts_user_id_fkey(id, username, display_name, avatar_url)",
-    )
+    .select(`*, ${LOADOUT_PROFILE_EMBED}`)
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
+  if (!opts?.includePrivate) {
+    query = query.eq("is_public", true);
+  }
+  const { data } = await query;
   return (data ?? []).map((row) => mapRow(row as never));
+}
+
+export async function listEmblemsByUser(
+  userId: string,
+  opts?: { includePrivate?: boolean },
+) {
+  if (!isSupabaseConfigured()) return [];
+  const supabase = await createClient();
+  let query = supabase
+    .from("emblems")
+    .select(`*, ${EMBLEM_PROFILE_EMBED}`)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (!opts?.includePrivate) {
+    query = query.eq("is_public", true);
+  }
+  const { data } = await query;
+  return (data ?? []).map((row) => mapEmblemRow(row as never));
 }
 
 export async function getProfileStats(userId: string) {
@@ -296,7 +346,11 @@ export async function getProfileStats(userId: string) {
   }
   const supabase = await createClient();
   const [{ data }, followers, following] = await Promise.all([
-    supabase.from("loadouts").select("like_count").eq("user_id", userId),
+    supabase
+      .from("loadouts")
+      .select("like_count")
+      .eq("user_id", userId)
+      .eq("is_public", true),
     supabase
       .from("follows")
       .select("follower_id", { count: "exact", head: true })
@@ -328,11 +382,6 @@ export async function isFollowingUser(targetUserId: string) {
   return Boolean(data);
 }
 
-type EmblemProfileLite = Pick<
-  Profile,
-  "id" | "username" | "display_name" | "avatar_url"
->;
-
 function mapEmblemRow(
   row: {
     id: string;
@@ -345,16 +394,14 @@ function mapEmblemRow(
     remix_of: string | null;
     like_count: number;
     save_count: number;
+    is_public?: boolean;
     created_at: string;
     updated_at: string;
-    profiles?: EmblemProfileLite | EmblemProfileLite[] | null;
+    profiles?: ProfileEmbed | ProfileEmbed[] | null;
   },
 ): CommunityEmblem {
-  const profileRaw = row.profiles;
-  const profile = Array.isArray(profileRaw)
-    ? profileRaw[0] ?? null
-    : profileRaw ?? null;
   const parsed = parseEmblemCode(row.emblem_code);
+  const profile = mapProfile(row.profiles);
   return {
     id: row.id,
     user_id: row.user_id,
@@ -366,10 +413,12 @@ function mapEmblemRow(
     remix_of: row.remix_of,
     like_count: row.like_count,
     save_count: row.save_count,
+    is_public: row.is_public ?? true,
     created_at: row.created_at,
     updated_at: row.updated_at,
     profile,
     layer_count: parsed?.layerCount ?? 0,
+    is_current: profile?.current_emblem_id === row.id,
   };
 }
 
@@ -386,10 +435,10 @@ export async function listCommunityEmblems(
   const sort = params.sort ?? "new";
   const q = params.q?.trim();
 
-  let query = supabase.from("emblems").select(
-    "*, profiles!emblems_user_id_fkey(id, username, display_name, avatar_url)",
-    { count: "exact" },
-  );
+  let query = supabase
+    .from("emblems")
+    .select(`*, ${EMBLEM_PROFILE_EMBED}`, { count: "exact" })
+    .eq("is_public", true);
 
   if (sort === "top") {
     query = query
@@ -420,11 +469,11 @@ export async function getEmblemBySlug(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("emblems")
-    .select(
-      "*, profiles!emblems_user_id_fkey(id, username, display_name, avatar_url)",
-    )
+    .select(`*, ${EMBLEM_PROFILE_EMBED}`)
     .eq("slug", slug)
     .maybeSingle();
   if (error || !data) return null;
   return mapEmblemRow(data as never);
 }
+
+export type { Profile };

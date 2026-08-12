@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { UserBadge } from "@/components/community/UserBadge";
 import { DeleteEmblemButton } from "@/components/community/DeleteEmblemButton";
+import { OwnerVisibilityButton } from "@/components/community/OwnerVisibilityButton";
+import { SetCurrentEmblemButton } from "@/components/community/SetCurrentEmblemButton";
 import { getEmblemBySlug, getMyProfile } from "@/lib/community/queries";
 import { emblemEditorLoadUrl } from "@/lib/community/emblemLinks";
 import { SITE_URL } from "@/lib/site";
@@ -15,6 +17,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const emblem = await getEmblemBySlug(slug);
   if (!emblem) return { title: "Emblem" };
+  if (!emblem.is_public) {
+    return {
+      title: { absolute: `${emblem.title} | BO2 Emblem` },
+      robots: { index: false, follow: false },
+    };
+  }
   return {
     title: { absolute: `${emblem.title} | BO2 Community Emblem` },
     description:
@@ -49,6 +57,14 @@ export default async function CommunityEmblemPage({ params }: Props) {
         <UserBadge profile={emblem.profile} />
         <span>{emblem.layer_count ?? 0}/32 layers</span>
         <span>{new Date(emblem.created_at).toLocaleDateString()}</span>
+        {!emblem.is_public ? (
+          <span className="community-vis-badge">Private</span>
+        ) : null}
+        {emblem.is_current ? (
+          <span className="community-vis-badge community-vis-badge--current">
+            Current
+          </span>
+        ) : null}
       </div>
 
       {emblem.description ? (
@@ -71,10 +87,21 @@ export default async function CommunityEmblemPage({ params }: Props) {
           Open in Emblem Editor
         </a>
         {isOwner ? (
-          <DeleteEmblemButton
-            emblemId={emblem.id}
-            redirectTo="/community/emblems"
-          />
+          <>
+            <SetCurrentEmblemButton
+              emblemId={emblem.id}
+              isCurrent={Boolean(emblem.is_current)}
+            />
+            <OwnerVisibilityButton
+              kind="emblem"
+              id={emblem.id}
+              isPublic={emblem.is_public}
+            />
+            <DeleteEmblemButton
+              emblemId={emblem.id}
+              redirectTo="/community/emblems"
+            />
+          </>
         ) : null}
       </div>
 

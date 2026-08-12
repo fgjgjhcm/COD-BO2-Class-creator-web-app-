@@ -16,6 +16,7 @@ export type Database = {
           display_name: string | null;
           avatar_url: string | null;
           bio: string | null;
+          current_emblem_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -25,6 +26,7 @@ export type Database = {
           display_name?: string | null;
           avatar_url?: string | null;
           bio?: string | null;
+          current_emblem_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -34,10 +36,19 @@ export type Database = {
           display_name?: string | null;
           avatar_url?: string | null;
           bio?: string | null;
+          current_emblem_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "profiles_current_emblem_id_fkey";
+            columns: ["current_emblem_id"];
+            isOneToOne: false;
+            referencedRelation: "emblems";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       loadouts: {
         Row: {
@@ -50,6 +61,7 @@ export type Database = {
           remix_of: string | null;
           like_count: number;
           save_count: number;
+          is_public: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -63,6 +75,7 @@ export type Database = {
           remix_of?: string | null;
           like_count?: number;
           save_count?: number;
+          is_public?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -76,10 +89,19 @@ export type Database = {
           remix_of?: string | null;
           like_count?: number;
           save_count?: number;
+          is_public?: boolean;
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "loadouts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       loadout_likes: {
         Row: {
@@ -171,6 +193,7 @@ export type Database = {
           remix_of: string | null;
           like_count: number;
           save_count: number;
+          is_public: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -185,6 +208,7 @@ export type Database = {
           remix_of?: string | null;
           like_count?: number;
           save_count?: number;
+          is_public?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -199,10 +223,19 @@ export type Database = {
           remix_of?: string | null;
           like_count?: number;
           save_count?: number;
+          is_public?: boolean;
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "emblems_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {

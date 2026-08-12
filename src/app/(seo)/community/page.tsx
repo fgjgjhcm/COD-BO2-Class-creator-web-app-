@@ -87,7 +87,7 @@ export default async function CommunityPage({
                 <CommunityLoadoutCard
                   key={loadout.id}
                   loadout={loadout}
-                  canDelete={me?.id === loadout.user_id}
+                  canManage={me?.id === loadout.user_id}
                 />
               ))}
             </div>

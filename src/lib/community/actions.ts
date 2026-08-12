@@ -191,6 +191,7 @@ export async function publishLoadoutAction(input: {
   description?: string;
   build: ClassBuild;
   remixOf?: string | null;
+  isPublic?: boolean;
 }): Promise<ActionResult<{ slug: string; id: string }>> {
   const auth = await requireUser();
   if (auth.error || !auth.user || !auth.supabase) {
@@ -228,6 +229,7 @@ export async function publishLoadoutAction(input: {
       slug,
       loadout_data: build as unknown as import("@/types/database").Json,
       remix_of: input.remixOf || null,
+      is_public: input.isPublic !== false,
     })
     .select("id, slug")
     .single();
@@ -238,6 +240,9 @@ export async function publishLoadoutAction(input: {
 
   revalidatePath("/community");
   revalidatePath(`/community/loadout/${data.slug}`);
+  if (profile.username) {
+    revalidatePath(`/community/user/${profile.username}`);
+  }
   return { ok: true, data: { slug: data.slug, id: data.id } };
 }
 
@@ -365,6 +370,8 @@ export async function publishEmblemAction(input: {
   description?: string;
   emblemCode: string;
   previewUrl?: string | null;
+  isPublic?: boolean;
+  setAsCurrent?: boolean;
 }): Promise<ActionResult<{ slug: string; id: string; layerCount: number }>> {
   const auth = await requireUser();
   if (auth.error || !auth.user || !auth.supabase) {
@@ -415,6 +422,7 @@ export async function publishEmblemAction(input: {
       slug,
       emblem_code: emblemCode,
       preview_url: previewUrl,
+      is_public: input.isPublic !== false,
     })
     .select("id, slug")
     .single();
@@ -423,9 +431,19 @@ export async function publishEmblemAction(input: {
     return { ok: false, error: error?.message ?? "Failed to publish emblem." };
   }
 
+  if (input.setAsCurrent) {
+    await auth.supabase
+      .from("profiles")
+      .update({ current_emblem_id: data.id })
+      .eq("id", auth.user.id);
+  }
+
   revalidatePath("/community");
   revalidatePath("/community/emblems");
   revalidatePath(`/community/emblem/${data.slug}`);
+  if (profile.username) {
+    revalidatePath(`/community/user/${profile.username}`);
+  }
   return {
     ok: true,
     data: { slug: data.slug, id: data.id, layerCount: parsed.layerCount },
@@ -459,5 +477,118 @@ export async function deleteEmblemAction(
   revalidatePath("/community");
   revalidatePath("/community/emblems");
   revalidatePath(`/community/emblem/${existing.slug}`);
+  await revalidateOwnerProfile(auth.supabase, auth.user.id);
   return { ok: true, data: undefined };
+}
+
+async function revalidateOwnerProfile(
+  supabase: NonNullable<Awaited<ReturnType<typeof requireUser>>["supabase"]>,
+  userId: string,
+) {
+  const { data } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", userId)
+    .maybeSingle();
+  if (data?.username) {
+    revalidatePath(`/community/user/${data.username}`);
+  }
+}
+
+export async function setLoadoutVisibilityAction(
+  loadoutId: string,
+  isPublic: boolean,
+): Promise<ActionResult<{ isPublic: boolean }>> {
+  const auth = await requireUser();
+  if (auth.error || !auth.user || !auth.supabase) {
+    return { ok: false, error: auth.error ?? "Sign in required." };
+  }
+
+  const { data: existing } = await auth.supabase
+    .from("loadouts")
+    .select("id, slug")
+    .eq("id", loadoutId)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (!existing) return { ok: false, error: "Loadout not found." };
+
+  const { error } = await auth.supabase
+    .from("loadouts")
+    .update({ is_public: isPublic })
+    .eq("id", loadoutId)
+    .eq("user_id", auth.user.id);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/community");
+  revalidatePath(`/community/loadout/${existing.slug}`);
+  await revalidateOwnerProfile(auth.supabase, auth.user.id);
+  return { ok: true, data: { isPublic } };
+}
+
+export async function setEmblemVisibilityAction(
+  emblemId: string,
+  isPublic: boolean,
+): Promise<ActionResult<{ isPublic: boolean }>> {
+  const auth = await requireUser();
+  if (auth.error || !auth.user || !auth.supabase) {
+    return { ok: false, error: auth.error ?? "Sign in required." };
+  }
+
+  const { data: existing } = await auth.supabase
+    .from("emblems")
+    .select("id, slug")
+    .eq("id", emblemId)
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  if (!existing) return { ok: false, error: "Emblem not found." };
+
+  const { error } = await auth.supabase
+    .from("emblems")
+    .update({ is_public: isPublic })
+    .eq("id", emblemId)
+    .eq("user_id", auth.user.id);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/community");
+  revalidatePath("/community/emblems");
+  revalidatePath(`/community/emblem/${existing.slug}`);
+  await revalidateOwnerProfile(auth.supabase, auth.user.id);
+  return { ok: true, data: { isPublic } };
+}
+
+export async function setCurrentEmblemAction(
+  emblemId: string | null,
+): Promise<ActionResult<{ currentEmblemId: string | null }>> {
+  const auth = await requireUser();
+  if (auth.error || !auth.user || !auth.supabase) {
+    return { ok: false, error: auth.error ?? "Sign in required." };
+  }
+
+  if (emblemId) {
+    const { data: emblem } = await auth.supabase
+      .from("emblems")
+      .select("id, slug")
+      .eq("id", emblemId)
+      .eq("user_id", auth.user.id)
+      .maybeSingle();
+    if (!emblem) {
+      return { ok: false, error: "You can only set your own emblems as current." };
+    }
+  }
+
+  const { error } = await auth.supabase
+    .from("profiles")
+    .update({ current_emblem_id: emblemId })
+    .eq("id", auth.user.id);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/community");
+  revalidatePath("/community/emblems");
+  await revalidateOwnerProfile(auth.supabase, auth.user.id);
+  return { ok: true, data: { currentEmblemId: emblemId } };
 }

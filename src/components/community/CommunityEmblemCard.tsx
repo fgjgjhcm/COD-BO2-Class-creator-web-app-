@@ -5,6 +5,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { CommunityEmblem } from "@/types/community";
 import { UserBadge } from "@/components/community/UserBadge";
+import { SetCurrentEmblemButton } from "@/components/community/SetCurrentEmblemButton";
+import { OwnerVisibilityButton } from "@/components/community/OwnerVisibilityButton";
 import { deleteEmblemAction } from "@/lib/community/actions";
 import { emblemEditorLoadUrl } from "@/lib/community/emblemLinks";
 
@@ -21,10 +23,10 @@ function relativeTime(iso: string): string {
 
 export function CommunityEmblemCard({
   emblem,
-  canDelete = false,
+  canManage = false,
 }: {
   emblem: CommunityEmblem;
-  canDelete?: boolean;
+  canManage?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -53,6 +55,14 @@ export function CommunityEmblemCard({
             <UserBadge profile={emblem.profile} />
             <span>{relativeTime(emblem.created_at)}</span>
             <span>{emblem.layer_count ?? 0}/32 layers</span>
+            {!emblem.is_public ? (
+              <span className="community-vis-badge">Private</span>
+            ) : null}
+            {emblem.is_current ? (
+              <span className="community-vis-badge community-vis-badge--current">
+                Current
+              </span>
+            ) : null}
           </div>
         </div>
       </header>
@@ -71,26 +81,37 @@ export function CommunityEmblemCard({
         <Link href={detailHref} className="community-action-btn">
           Details
         </Link>
-        {canDelete ? (
-          <button
-            type="button"
-            className="community-action-btn community-delete-btn"
-            disabled={pending}
-            onClick={() => {
-              if (!window.confirm("Delete this emblem?")) return;
-              setError(null);
-              startTransition(async () => {
-                const result = await deleteEmblemAction(emblem.id);
-                if (!result.ok) {
-                  setError(result.error);
-                  return;
-                }
-                router.refresh();
-              });
-            }}
-          >
-            {pending ? "Deleting…" : "Delete"}
-          </button>
+        {canManage ? (
+          <>
+            <SetCurrentEmblemButton
+              emblemId={emblem.id}
+              isCurrent={Boolean(emblem.is_current)}
+            />
+            <OwnerVisibilityButton
+              kind="emblem"
+              id={emblem.id}
+              isPublic={emblem.is_public}
+            />
+            <button
+              type="button"
+              className="community-action-btn community-delete-btn"
+              disabled={pending}
+              onClick={() => {
+                if (!window.confirm("Delete this emblem?")) return;
+                setError(null);
+                startTransition(async () => {
+                  const result = await deleteEmblemAction(emblem.id);
+                  if (!result.ok) {
+                    setError(result.error);
+                    return;
+                  }
+                  router.refresh();
+                });
+              }}
+            >
+              {pending ? "Deleting…" : "Delete"}
+            </button>
+          </>
         ) : null}
       </footer>
       {error ? <p className="community-inline-error">{error}</p> : null}

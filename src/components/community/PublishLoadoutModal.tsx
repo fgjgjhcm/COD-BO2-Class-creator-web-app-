@@ -6,6 +6,7 @@ import type { ClassBuild } from "@/types/class";
 import { countUsedPoints } from "@/lib/pick10";
 import { publishLoadoutAction } from "@/lib/community/actions";
 import { LoadoutPreview } from "@/components/community/LoadoutPreview";
+import { VisibilityToggle } from "@/components/community/VisibilityToggle";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { UsernameGate } from "@/components/community/UsernameGate";
@@ -26,6 +27,7 @@ export function PublishLoadoutModal({
   const router = useRouter();
   const [title, setTitle] = useState(defaultTitle || build.name || "");
   const [description, setDescription] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [needsUsername, setNeedsUsername] = useState(false);
   const [checking, setChecking] = useState(false);
@@ -35,6 +37,7 @@ export function PublishLoadoutModal({
     if (!open) return;
     setTitle(defaultTitle || build.name || "");
     setDescription("");
+    setIsPublic(true);
     setError(null);
     setNeedsUsername(false);
 
@@ -115,6 +118,7 @@ export function PublishLoadoutModal({
                   description,
                   build,
                   remixOf: remixOf ?? null,
+                  isPublic,
                 });
                 if (!result.ok) {
                   setError(result.error);
@@ -154,6 +158,13 @@ export function PublishLoadoutModal({
               />
             </label>
 
+            <VisibilityToggle
+              isPublic={isPublic}
+              onChange={setIsPublic}
+              disabled={pending}
+              name="loadout-visibility"
+            />
+
             <LoadoutPreview build={build} />
 
             {error ? <p className="community-error">{error}</p> : null}
@@ -163,7 +174,7 @@ export function PublishLoadoutModal({
                 Cancel
               </button>
               <button type="submit" className="seo-cta" disabled={pending}>
-                {pending ? "Publishing…" : "Publish"}
+                {pending ? "Publishing…" : isPublic ? "Publish" : "Save private"}
               </button>
             </div>
           </form>

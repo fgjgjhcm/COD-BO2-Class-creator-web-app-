@@ -7,6 +7,7 @@ import { LoadoutPreview } from "@/components/community/LoadoutPreview";
 import { LikeButton } from "@/components/community/LikeButton";
 import { SaveButton } from "@/components/community/SaveButton";
 import { DeleteLoadoutButton } from "@/components/community/DeleteLoadoutButton";
+import { OwnerVisibilityButton } from "@/components/community/OwnerVisibilityButton";
 import { UserBadge } from "@/components/community/UserBadge";
 import { weaponsById } from "@/data/weapons";
 import { getItemImageSrc } from "@/lib/icons";
@@ -25,10 +26,10 @@ function relativeTime(iso: string): string {
 
 export function CommunityLoadoutCard({
   loadout,
-  canDelete = false,
+  canManage = false,
 }: {
   loadout: CommunityLoadout;
-  canDelete?: boolean;
+  canManage?: boolean;
 }) {
   const [shareMsg, setShareMsg] = useState<string | null>(null);
   const primary = loadout.loadout_data.primaryWeaponId
@@ -57,6 +58,9 @@ export function CommunityLoadoutCard({
             <div className="community-card-meta">
               <UserBadge profile={loadout.profile} />
               <span>{relativeTime(loadout.created_at)}</span>
+              {!loadout.is_public ? (
+                <span className="community-vis-badge">Private</span>
+              ) : null}
             </div>
           </div>
         </div>
@@ -117,15 +121,22 @@ export function CommunityLoadoutCard({
         >
           {shareMsg ?? "Share"}
         </button>
-        {canDelete ? (
-          <DeleteLoadoutButton
-            loadoutId={loadout.id}
-            redirectTo={
-              loadout.profile?.username
-                ? `/community/user/${loadout.profile.username}`
-                : "/community"
-            }
-          />
+        {canManage ? (
+          <>
+            <OwnerVisibilityButton
+              kind="loadout"
+              id={loadout.id}
+              isPublic={loadout.is_public}
+            />
+            <DeleteLoadoutButton
+              loadoutId={loadout.id}
+              redirectTo={
+                loadout.profile?.username
+                  ? `/community/user/${loadout.profile.username}`
+                  : "/community"
+              }
+            />
+          </>
         ) : null}
       </footer>
     </article>

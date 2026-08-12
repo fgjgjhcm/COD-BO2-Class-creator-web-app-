@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CommunityEmblemCard } from "@/components/community/CommunityEmblemCard";
 import { CommunityLoadoutCard } from "@/components/community/CommunityLoadoutCard";
 import { FollowButton } from "@/components/community/FollowButton";
 import { ProfileEditForm } from "@/components/community/ProfileEditForm";
@@ -9,6 +10,7 @@ import {
   getProfileByUsername,
   getProfileStats,
   isFollowingUser,
+  listEmblemsByUser,
   listLoadoutsByUser,
 } from "@/lib/community/queries";
 
@@ -29,18 +31,46 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+function currentEmblemFromProfile(
+  profile: NonNullable<Awaited<ReturnType<typeof getProfileByUsername>>>,
+) {
+  const raw = (profile as { current_emblem?: unknown }).current_emblem as
+    | {
+        id: string;
+        title: string;
+        slug: string;
+        preview_url: string | null;
+        is_public?: boolean;
+      }
+    | {
+        id: string;
+        title: string;
+        slug: string;
+        preview_url: string | null;
+        is_public?: boolean;
+      }[]
+    | null
+    | undefined;
+  if (!raw) return null;
+  return Array.isArray(raw) ? (raw[0] ?? null) : raw;
+}
+
 export default async function CommunityUserPage({ params }: Props) {
   const { username } = await params;
   const profile = await getProfileByUsername(username);
   if (!profile?.username) notFound();
 
-  const [stats, loadouts, me, following] = await Promise.all([
+  const me = await getMyProfile();
+  const isSelf = me?.id === profile.id;
+
+  const [stats, loadouts, emblems, following] = await Promise.all([
     getProfileStats(profile.id),
-    listLoadoutsByUser(profile.id),
-    getMyProfile(),
+    listLoadoutsByUser(profile.id, { includePrivate: isSelf }),
+    listEmblemsByUser(profile.id, { includePrivate: isSelf }),
     isFollowingUser(profile.id),
   ]);
-  const isSelf = me?.id === profile.id;
+
+  const currentEmblem = currentEmblemFromProfile(profile);
 
   return (
     <>
@@ -80,6 +110,23 @@ export default async function CommunityUserPage({ params }: Props) {
             </div>
           ) : null}
         </div>
+        {currentEmblem ? (
+          <Link
+            href={`/community/emblem/${currentEmblem.slug}`}
+            className="community-profile-current-emblem"
+          >
+            {currentEmblem.preview_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={currentEmblem.preview_url} alt="" />
+            ) : (
+              <span className="community-emblem-card-placeholder">Emblem</span>
+            )}
+            <span>
+              <em>Current emblem</em>
+              <strong>{currentEmblem.title}</strong>
+            </span>
+          </Link>
+        ) : null}
       </div>
 
       {isSelf ? (
@@ -91,7 +138,9 @@ export default async function CommunityUserPage({ params }: Props) {
         />
       ) : null}
 
-      <h2 className="seo-section-title">Published loadouts</h2>
+      <h2 className="seo-section-title">
+        {isSelf ? "Your loadouts" : "Published loadouts"}
+      </h2>
       {loadouts.length === 0 ? (
         <div className="community-empty">
           <p className="community-empty-title">NO INTEL FOUND</p>
@@ -108,7 +157,36 @@ export default async function CommunityUserPage({ params }: Props) {
             <CommunityLoadoutCard
               key={loadout.id}
               loadout={loadout}
-              canDelete={isSelf}
+              canManage={isSelf}
+            />
+          ))}
+        </div>
+      )}
+
+      <h2 className="seo-section-title">
+        {isSelf ? "Your emblems" : "Emblems"}
+      </h2>
+      {emblems.length === 0 ? (
+        <div className="community-empty">
+          <p className="community-empty-title">NO EMBLEMS</p>
+          <p className="seo-lead">
+            {isSelf
+              ? "Post an emblem and set one as current to show it on your profile."
+              : "This operative has not shared emblems yet."}
+          </p>
+          {isSelf ? (
+            <Link href="/community/emblems?publish=1" className="seo-cta">
+              Post Emblem
+            </Link>
+          ) : null}
+        </div>
+      ) : (
+        <div className="community-grid">
+          {emblems.map((emblem) => (
+            <CommunityEmblemCard
+              key={emblem.id}
+              emblem={emblem}
+              canManage={isSelf}
             />
           ))}
         </div>
