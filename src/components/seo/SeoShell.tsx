@@ -33,31 +33,25 @@ export function SeoShell({
             <span>{SITE_DOMAIN}</span>
           </Link>
           <nav className="seo-header-hub" aria-label="Hub">
-            {SEO_HUB_NAV.map((item) => {
-              const icon = "icon" in item ? item.icon : null;
-              const glow = "glow" in item ? item.glow : null;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`seo-header-hub-btn${glow ? ` seo-header-hub-btn--${glow}` : ""}`}
-                >
-                  {icon ? (
-                    <span className="seo-header-hub-icon-wrap" aria-hidden="true">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={icon}
-                        alt=""
-                        className="seo-header-hub-icon"
-                        width={28}
-                        height={25}
-                      />
-                    </span>
-                  ) : null}
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
+            {SEO_HUB_NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`seo-header-hub-btn seo-header-hub-btn--${item.glow}`}
+              >
+                <span className="seo-header-hub-icon-wrap" aria-hidden="true">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.icon}
+                    alt=""
+                    className="seo-header-hub-icon"
+                    width={36}
+                    height={36}
+                  />
+                </span>
+                <span>{item.label}</span>
+              </Link>
+            ))}
           </nav>
           <div className="seo-header-actions">
             <AuthButton />
