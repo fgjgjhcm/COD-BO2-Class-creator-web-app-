@@ -2997,11 +2997,17 @@ html.afterlife-active .teddy-float {
   margin-bottom: 1.25rem;
 }
 
+.community-profile-hero-main {
+  min-width: 0;
+  flex: 1;
+}
+
 .community-profile-avatar {
   width: 4.5rem;
   height: 4.5rem;
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.16);
+  flex-shrink: 0;
 }
 
 .community-profile-avatar--fallback {
@@ -3022,10 +3028,61 @@ html.afterlife-active .teddy-float {
   font-size: 0.82rem;
 }
 
+.community-profile-actions {
+  margin-top: 0.75rem;
+}
+
+.community-follow-btn.is-following {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #ddd;
+}
+
 .community-profile-edit {
   margin: 0 0 1.5rem;
   padding: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.community-avatar-edit {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.community-avatar-edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.community-field-hint {
+  width: 100%;
+  margin: 0;
+  color: #777;
+  font-size: 0.75rem;
+}
+
+.community-text-btn {
+  background: transparent;
+  border: 0;
+  color: #999;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0.35rem 0;
+}
+
+.community-text-btn:hover {
+  color: #ff7a55;
+}
+
+.community-text-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .community-report-btn {

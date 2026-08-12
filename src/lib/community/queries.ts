@@ -95,7 +95,7 @@ export async function listCommunityLoadouts(
     let query = supabase
       .from("loadouts")
       .select(
-        "*, profiles(id, username, display_name, avatar_url)",
+        "*, profiles!loadouts_user_id_fkey(id, username, display_name, avatar_url)",
         { count: "exact" },
       )
       .order("created_at", { ascending: false })
@@ -131,7 +131,7 @@ export async function listCommunityLoadouts(
   let query = supabase
     .from("loadouts")
     .select(
-      "*, profiles(id, username, display_name, avatar_url)",
+      "*, profiles!loadouts_user_id_fkey(id, username, display_name, avatar_url)",
       { count: "exact" },
     );
 
@@ -171,7 +171,7 @@ export async function listCommunityLoadouts(
       let userQuery = supabase
         .from("loadouts")
         .select(
-          "*, profiles(id, username, display_name, avatar_url)",
+          "*, profiles!loadouts_user_id_fkey(id, username, display_name, avatar_url)",
           { count: "exact" },
         )
         .in("user_id", ids)
@@ -200,7 +200,7 @@ export async function getLoadoutBySlug(
   const { data, error } = await supabase
     .from("loadouts")
     .select(
-      "*, profiles(id, username, display_name, avatar_url)",
+      "*, profiles!loadouts_user_id_fkey(id, username, display_name, avatar_url)",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -251,7 +251,7 @@ export async function getLoadoutById(
   const { data, error } = await supabase
     .from("loadouts")
     .select(
-      "*, profiles(id, username, display_name, avatar_url)",
+      "*, profiles!loadouts_user_id_fkey(id, username, display_name, avatar_url)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -276,7 +276,7 @@ export async function listLoadoutsByUser(userId: string) {
   const { data } = await supabase
     .from("loadouts")
     .select(
-      "*, profiles(id, username, display_name, avatar_url)",
+      "*, profiles!loadouts_user_id_fkey(id, username, display_name, avatar_url)",
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
@@ -285,16 +285,43 @@ export async function listLoadoutsByUser(userId: string) {
 
 export async function getProfileStats(userId: string) {
   if (!isSupabaseConfigured()) {
-    return { loadoutCount: 0, totalLikes: 0 };
+    return {
+      loadoutCount: 0,
+      totalLikes: 0,
+      followerCount: 0,
+      followingCount: 0,
+    };
   }
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("loadouts")
-    .select("like_count")
-    .eq("user_id", userId);
+  const [{ data }, followers, following] = await Promise.all([
+    supabase.from("loadouts").select("like_count").eq("user_id", userId),
+    supabase
+      .from("follows")
+      .select("follower_id", { count: "exact", head: true })
+      .eq("following_id", userId),
+    supabase
+      .from("follows")
+      .select("following_id", { count: "exact", head: true })
+      .eq("follower_id", userId),
+  ]);
   const rows = data ?? [];
   return {
     loadoutCount: rows.length,
     totalLikes: rows.reduce((sum, row) => sum + (row.like_count ?? 0), 0),
+    followerCount: followers.count ?? 0,
+    followingCount: following.count ?? 0,
   };
+}
+
+export async function isFollowingUser(targetUserId: string) {
+  const user = await getSessionUser();
+  if (!user || !isSupabaseConfigured()) return false;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("follows")
+    .select("following_id")
+    .eq("follower_id", user.id)
+    .eq("following_id", targetUserId)
+    .maybeSingle();
+  return Boolean(data);
 }

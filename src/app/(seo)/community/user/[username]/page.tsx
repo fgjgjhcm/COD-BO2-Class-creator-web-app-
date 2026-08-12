@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CommunityLoadoutCard } from "@/components/community/CommunityLoadoutCard";
+import { FollowButton } from "@/components/community/FollowButton";
 import { ProfileEditForm } from "@/components/community/ProfileEditForm";
 import {
   getMyProfile,
   getProfileByUsername,
   getProfileStats,
+  isFollowingUser,
   listLoadoutsByUser,
 } from "@/lib/community/queries";
 
@@ -32,10 +34,11 @@ export default async function CommunityUserPage({ params }: Props) {
   const profile = await getProfileByUsername(username);
   if (!profile?.username) notFound();
 
-  const [stats, loadouts, me] = await Promise.all([
+  const [stats, loadouts, me, following] = await Promise.all([
     getProfileStats(profile.id),
     listLoadoutsByUser(profile.id),
     getMyProfile(),
+    isFollowingUser(profile.id),
   ]);
   const isSelf = me?.id === profile.id;
 
@@ -57,7 +60,7 @@ export default async function CommunityUserPage({ params }: Props) {
             {profile.username.slice(0, 1).toUpperCase()}
           </div>
         )}
-        <div>
+        <div className="community-profile-hero-main">
           <h1 className="seo-title">@{profile.username}</h1>
           {profile.display_name ? (
             <p className="community-profile-display">{profile.display_name}</p>
@@ -65,16 +68,26 @@ export default async function CommunityUserPage({ params }: Props) {
           {profile.bio ? <p className="seo-lead">{profile.bio}</p> : null}
           <p className="community-profile-stats">
             Joined {new Date(profile.created_at).toLocaleDateString()} ·{" "}
-            {stats.loadoutCount} loadouts · {stats.totalLikes} likes
+            {stats.loadoutCount} loadouts · {stats.totalLikes} likes ·{" "}
+            {stats.followerCount} followers · {stats.followingCount} following
           </p>
-          {/* Future: EASTER EGG HUNTER and other badges */}
+          {!isSelf ? (
+            <div className="community-profile-actions">
+              <FollowButton
+                targetUserId={profile.id}
+                initialFollowing={following}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
 
       {isSelf ? (
         <ProfileEditForm
+          userId={profile.id}
           initialDisplayName={profile.display_name ?? ""}
           initialBio={profile.bio ?? ""}
+          initialAvatarUrl={profile.avatar_url}
         />
       ) : null}
 

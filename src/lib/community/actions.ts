@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { getSupabaseEnv, isSupabaseConfigured } from "@/lib/supabase/env";
 import { uniqueSlug, isValidUsername, normalizeUsername } from "@/lib/community/slug";
 import {
   parseClassBuild,
@@ -69,6 +69,12 @@ export async function updateProfileAction(input: {
     return { ok: false, error: auth.error ?? "Sign in required." };
   }
 
+  const { data: profile } = await auth.supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", auth.user.id)
+    .maybeSingle();
+
   const { error } = await auth.supabase
     .from("profiles")
     .update({
@@ -79,7 +85,104 @@ export async function updateProfileAction(input: {
 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/community");
+  if (profile?.username) {
+    revalidatePath(`/community/user/${profile.username}`);
+  }
   return { ok: true, data: undefined };
+}
+
+export async function updateAvatarAction(input: {
+  avatarUrl: string | null;
+}): Promise<ActionResult<{ avatarUrl: string | null }>> {
+  const auth = await requireUser();
+  if (auth.error || !auth.user || !auth.supabase) {
+    return { ok: false, error: auth.error ?? "Sign in required." };
+  }
+
+  const avatarUrl = input.avatarUrl?.trim() || null;
+  if (avatarUrl) {
+    const env = getSupabaseEnv();
+    const prefix = env
+      ? `${env.url.replace(/\/$/, "")}/storage/v1/object/public/avatars/`
+      : null;
+    if (!prefix || !avatarUrl.startsWith(prefix)) {
+      return { ok: false, error: "Invalid avatar URL." };
+    }
+  }
+
+  const { data: profile } = await auth.supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", auth.user.id)
+    .maybeSingle();
+
+  const { error } = await auth.supabase
+    .from("profiles")
+    .update({ avatar_url: avatarUrl })
+    .eq("id", auth.user.id);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/community");
+  if (profile?.username) {
+    revalidatePath(`/community/user/${profile.username}`);
+  }
+  return { ok: true, data: { avatarUrl } };
+}
+
+export async function toggleFollowAction(
+  targetUserId: string,
+): Promise<ActionResult<{ following: boolean }>> {
+  const auth = await requireUser();
+  if (auth.error || !auth.user || !auth.supabase) {
+    return { ok: false, error: auth.error ?? "Sign in required." };
+  }
+
+  if (!targetUserId || targetUserId === auth.user.id) {
+    return { ok: false, error: "You cannot follow yourself." };
+  }
+
+  const [{ data: target }, { data: existing }] = await Promise.all([
+    auth.supabase
+      .from("profiles")
+      .select("id, username")
+      .eq("id", targetUserId)
+      .maybeSingle(),
+    auth.supabase
+      .from("follows")
+      .select("following_id")
+      .eq("follower_id", auth.user.id)
+      .eq("following_id", targetUserId)
+      .maybeSingle(),
+  ]);
+
+  if (!target) return { ok: false, error: "Operative not found." };
+
+  const { data: me } = await auth.supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", auth.user.id)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await auth.supabase
+      .from("follows")
+      .delete()
+      .eq("follower_id", auth.user.id)
+      .eq("following_id", targetUserId);
+    if (error) return { ok: false, error: error.message };
+    if (target.username) revalidatePath(`/community/user/${target.username}`);
+    if (me?.username) revalidatePath(`/community/user/${me.username}`);
+    return { ok: true, data: { following: false } };
+  }
+
+  const { error } = await auth.supabase.from("follows").insert({
+    follower_id: auth.user.id,
+    following_id: targetUserId,
+  });
+  if (error) return { ok: false, error: error.message };
+  if (target.username) revalidatePath(`/community/user/${target.username}`);
+  if (me?.username) revalidatePath(`/community/user/${me.username}`);
+  return { ok: true, data: { following: true } };
 }
 
 export async function publishLoadoutAction(input: {
