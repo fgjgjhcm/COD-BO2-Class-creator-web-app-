@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Saira_Condensed, Saira_Extra_Condensed } from "next/font/google";
 import { LoadingProvider } from "@/components/LoadingScreen";
 import { UiSoundProvider } from "@/components/UiSoundProvider";
@@ -19,6 +19,14 @@ const body = Saira_Condensed({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0a0a0a",
+  colorScheme: "dark",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://bo2loadouts.com"),

@@ -48,7 +48,7 @@ export const EASTER_EGGS: EasterEggDef[] = [
     id: "afterlife",
     name: "Afterlife",
     category: "Mob of the Dead",
-    hint: "Read the fine print. The walls still hum.",
+    hint: "Visit About. The walls still hum.",
     description: "Entered Afterlife. The blue world remembers.",
     unlockedIcon: "/images/easter-eggs/afterlife.png",
     lockedIcon: "/images/easter-eggs/afterlife-silhouette.png",

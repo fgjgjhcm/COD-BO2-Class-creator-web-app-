@@ -9,8 +9,10 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
+import { useCoarsePointer } from "@/hooks/useCoarsePointer";
 import { celebrateEasterEggUnlock } from "@/lib/uiSound";
 
 const HOLD_MS = 1100;
@@ -21,7 +23,11 @@ type AfterlifeContextValue = {
   /** True while the MotD box station is on-screen / available */
   atStation: boolean;
   holdProgress: number;
+  /** Touch / coarse-pointer UI (no Space key) */
+  isTouchUi: boolean;
   setAtStation: (near: boolean) => void;
+  beginHold: () => void;
+  stopHold: () => void;
   exit: () => void;
 };
 
@@ -39,17 +45,27 @@ function isTypingTarget(target: EventTarget | null): boolean {
 }
 
 export function AfterlifeProvider({ children }: { children: ReactNode }) {
+  const isTouchUi = useCoarsePointer();
   const [active, setActive] = useState(false);
   const [atStation, setAtStation] = useState(false);
   const [holdProgress, setHoldProgress] = useState(0);
   const holdStartedAt = useRef<number | null>(null);
   const rafRef = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const spaceDown = useRef(false);
+  const holding = useRef(false);
+  const activeRef = useRef(active);
+  const atStationRef = useRef(atStation);
+  activeRef.current = active;
+  atStationRef.current = atStation;
+
+  const setAtStationSafe = useCallback((near: boolean) => {
+    atStationRef.current = near;
+    setAtStation(near);
+  }, []);
 
   const stopHold = useCallback(() => {
     holdStartedAt.current = null;
-    spaceDown.current = false;
+    holding.current = false;
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = 0;
@@ -92,8 +108,8 @@ export function AfterlifeProvider({ children }: { children: ReactNode }) {
     setHoldProgress(progress);
     if (progress >= 1) {
       holdStartedAt.current = null;
-      spaceDown.current = false;
-      if (active) {
+      holding.current = false;
+      if (activeRef.current) {
         exit();
       } else {
         enter();
@@ -101,11 +117,12 @@ export function AfterlifeProvider({ children }: { children: ReactNode }) {
       return;
     }
     rafRef.current = requestAnimationFrame(tickHold);
-  }, [active, enter, exit]);
+  }, [enter, exit]);
 
   const beginHold = useCallback(() => {
-    if (spaceDown.current) return;
-    spaceDown.current = true;
+    if (holding.current) return;
+    if (!activeRef.current && !atStationRef.current) return;
+    holding.current = true;
     holdStartedAt.current = performance.now();
     setHoldProgress(0.01);
     rafRef.current = requestAnimationFrame(tickHold);
@@ -126,7 +143,7 @@ export function AfterlifeProvider({ children }: { children: ReactNode }) {
 
     const onKeyUp = (event: KeyboardEvent) => {
       if (event.code !== "Space" && event.key !== " ") return;
-      if (spaceDown.current) {
+      if (holding.current) {
         event.preventDefault();
         stopHold();
       }
@@ -152,15 +169,47 @@ export function AfterlifeProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const onHoldPointerDown = useCallback(
+    (event: ReactPointerEvent<HTMLElement>) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      beginHold();
+    },
+    [beginHold],
+  );
+
+  const onHoldPointerEnd = useCallback(
+    (event: ReactPointerEvent<HTMLElement>) => {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+      stopHold();
+    },
+    [stopHold],
+  );
+
   const value = useMemo(
     () => ({
       active,
       atStation,
       holdProgress,
-      setAtStation,
+      isTouchUi,
+      setAtStation: setAtStationSafe,
+      beginHold,
+      stopHold,
       exit,
     }),
-    [active, atStation, holdProgress, exit],
+    [
+      active,
+      atStation,
+      holdProgress,
+      isTouchUi,
+      setAtStationSafe,
+      beginHold,
+      stopHold,
+      exit,
+    ],
   );
 
   const showPrompt = (atStation && !active) || active;
@@ -175,8 +224,29 @@ export function AfterlifeProvider({ children }: { children: ReactNode }) {
             style={{ "--hold": holdProgress } as CSSProperties}
           />
           <p>
-            Hold <kbd>SPACE</kbd> to {active ? "leave" : "enter"} Afterlife
+            {isTouchUi ? (
+              <>Hold to {active ? "leave" : "enter"} Afterlife</>
+            ) : (
+              <>
+                Hold <kbd>SPACE</kbd> to {active ? "leave" : "enter"} Afterlife
+              </>
+            )}
           </p>
+          {isTouchUi ? (
+            <button
+              type="button"
+              className="afterlife-hold-btn"
+              aria-label={
+                active ? "Hold to leave Afterlife" : "Hold to enter Afterlife"
+              }
+              onPointerDown={onHoldPointerDown}
+              onPointerUp={onHoldPointerEnd}
+              onPointerCancel={onHoldPointerEnd}
+              onLostPointerCapture={stopHold}
+            >
+              Hold
+            </button>
+          ) : null}
           {active ? (
             <button type="button" className="afterlife-exit-btn" onClick={exit}>
               Return to Alcatraz

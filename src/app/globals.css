@@ -39,6 +39,7 @@
 
 html {
   color-scheme: dark;
+  overflow-x: clip;
 }
 
 body {
@@ -53,6 +54,9 @@ body {
   background-size:
     4px 100%,
     100% 100%;
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body::before {
@@ -741,8 +745,15 @@ body::before {
   margin: 0 auto;
   padding: 0 0.75rem;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.seo-tabs-inner::-webkit-scrollbar {
+  display: none;
 }
 
 .seo-tab {
@@ -755,6 +766,8 @@ body::before {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .seo-tab:hover {
@@ -864,6 +877,48 @@ body::before {
   width: 100%;
   margin: 0 auto;
   padding: 1.5rem 1.25rem 3rem;
+}
+
+@media (max-width: 640px) {
+  .seo-header-inner {
+    padding: 0.75rem 1rem;
+    gap: 0.55rem;
+  }
+
+  .seo-brand {
+    font-size: 1.05rem;
+    min-width: 0;
+  }
+
+  .seo-brand span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .seo-cta {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.65rem;
+  }
+
+  .seo-main {
+    padding: 1.15rem 1rem 4.75rem;
+  }
+
+  .seo-home-tabs {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+    margin-top: 1.35rem;
+  }
+
+  .seo-home-tab {
+    min-height: 0;
+    padding: 0.85rem 0.9rem;
+  }
+
+  .seo-title {
+    font-size: clamp(1.75rem, 9vw, 2.35rem);
+  }
 }
 
 .seo-breadcrumb {
@@ -1057,13 +1112,27 @@ body::before {
   }
 }
 
+@media (max-width: 640px) {
+  .cac-screen {
+    padding-bottom: 5.5rem;
+  }
+
+  .cac-header {
+    gap: 0.75rem;
+  }
+
+  .class-name-input {
+    font-size: 1.85rem;
+  }
+}
+
 /* —— Easter eggs (Origins inventory vibes) —— */
 .teddy-float {
   --powerup-green: #b6ff2a;
   --powerup-core: #f5ffe0;
   position: fixed;
-  right: 0.65rem;
-  bottom: 0.65rem;
+  right: max(0.65rem, env(safe-area-inset-right));
+  bottom: max(0.65rem, env(safe-area-inset-bottom));
   z-index: 40;
   width: 4.25rem;
   height: 4.25rem;
@@ -1073,6 +1142,7 @@ body::before {
   background: transparent;
   border-radius: 50%;
   transition: transform 160ms ease;
+  touch-action: manipulation;
 }
 
 .teddy-float-glow {
@@ -1378,10 +1448,44 @@ body::before {
 }
 
 @media (max-width: 520px) {
+  .ee-screen {
+    padding: 1rem 0.75rem 5.75rem;
+  }
+
+  .ee-panel {
+    padding: 0.9rem 0.85rem 1.1rem;
+  }
+
+  .ee-title {
+    font-size: clamp(1.65rem, 9vw, 2.15rem);
+  }
+
+  .ee-slots {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem 0.65rem;
+  }
+
+  .ee-slot-wrap {
+    width: auto;
+  }
+
+  .ee-slot {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+  }
+
   .ee-scoreboard-head,
   .ee-scoreboard-row {
-    grid-template-columns: 1.4fr repeat(3, 0.55fr);
-    font-size: 0.62rem;
+    grid-template-columns: 1.2fr repeat(3, 0.55fr);
+    font-size: 0.58rem;
+    padding: 0.5rem 0.55rem;
+    gap: 0.3rem;
+  }
+
+  .ee-player {
+    font-size: 0.78rem;
   }
 
   .teddy-float {
@@ -1458,7 +1562,7 @@ html.afterlife-active .teddy-float {
 .afterlife-prompt {
   position: fixed;
   left: 50%;
-  bottom: 18%;
+  bottom: max(18%, calc(5.5rem + env(safe-area-inset-bottom)));
   transform: translateX(-50%);
   z-index: 45;
   display: flex;
@@ -1467,6 +1571,8 @@ html.afterlife-active .teddy-float {
   gap: 0.65rem;
   pointer-events: none;
   text-align: center;
+  width: min(92vw, 22rem);
+  padding: 0 0.75rem;
 }
 
 .afterlife-prompt p {
@@ -1507,6 +1613,29 @@ html.afterlife-active .teddy-float {
   );
 }
 
+.afterlife-hold-btn {
+  pointer-events: auto;
+  min-width: 7.5rem;
+  min-height: 2.75rem;
+  border: 1px solid rgba(140, 220, 255, 0.7);
+  background: rgba(8, 36, 56, 0.88);
+  color: #dff6ff;
+  padding: 0.55rem 1.15rem;
+  font-family: var(--font-display-stack);
+  font-size: 1rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.afterlife-hold-btn:active {
+  background: rgba(20, 70, 105, 0.95);
+  box-shadow: 0 0 18px rgba(80, 200, 255, 0.35);
+}
+
 .afterlife-exit-btn {
   pointer-events: auto;
   border: 1px solid rgba(140, 220, 255, 0.55);
@@ -1517,6 +1646,7 @@ html.afterlife-active .teddy-float {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .afterlife-exit-btn:hover {
@@ -1556,6 +1686,27 @@ html.afterlife-active .teddy-float {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.afterlife-box-btn {
+  display: block;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  color: inherit;
+  font: inherit;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.afterlife-box-btn:focus-visible {
+  outline: 2px solid rgba(120, 220, 255, 0.75);
+  outline-offset: 3px;
+}
+
+.afterlife-box-btn:active {
+  transform: translateY(1px);
 }
 
 .afterlife-box-face {
@@ -1599,11 +1750,43 @@ html.afterlife-active .teddy-float {
   font-size: 0.85rem;
   letter-spacing: 0.03em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
+  text-align: center;
+  max-width: 16rem;
 }
 
 .afterlife-station.is-afterlife .afterlife-box {
   box-shadow:
     inset 0 0 18px rgba(100, 220, 255, 0.25),
     0 0 24px rgba(80, 200, 255, 0.35);
+}
+
+@media (max-width: 640px) {
+  .afterlife-prompt {
+    bottom: max(1.25rem, calc(5.25rem + env(safe-area-inset-bottom)));
+  }
+
+  .afterlife-prompt p {
+    font-size: 0.85rem;
+  }
+
+  .afterlife-box {
+    width: 6.5rem;
+    height: 7.85rem;
+  }
+
+  .cac-row {
+    grid-template-columns: 58px 1fr;
+    gap: 0.45rem;
+  }
+
+  .cac-row-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+  }
+
+  .app-shell {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
 }
 
